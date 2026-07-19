@@ -19,7 +19,13 @@ export const BOND_GOAL = 100;
 export const PET_BOND_GAIN = 6;
 export const FEED_BOND_GAIN = 12;
 export const PET_COOLDOWN_MS = 2_500;
-export const FEED_COOLDOWN_MS = 20_000;
+
+/** 우주젤리 쿨다운 — NEXT_PUBLIC_FEED_COOLDOWN_MS(ms)로 재정의 가능. 기본 20초 */
+const envFeedCooldown = Number(process.env.NEXT_PUBLIC_FEED_COOLDOWN_MS);
+export const FEED_COOLDOWN_MS =
+  Number.isFinite(envFeedCooldown) && envFeedCooldown >= 0
+    ? envFeedCooldown
+    : 20_000;
 
 // ── 수거 ─────────────────────────────────────────────────────────────
 /** 기분 100 기준 궤도당 수거량 */

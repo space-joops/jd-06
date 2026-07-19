@@ -51,3 +51,5 @@
 - `src/hooks/useGame.ts` — 1초 틱, 오프라인 정산, 자동 저장
 - `src/components/` — PetSvg(캐릭터), OrbitView(궤도 시각화), screens/(스테이지별 화면), panels/(편지함·도감·정산 모달)
 - 게임 수치를 바꿀 땐 `src/lib/constants.ts`만 수정하면 됨
+- 우주젤리 쿨다운은 환경 변수 `NEXT_PUBLIC_FEED_COOLDOWN_MS`(ms)로 재정의 가능 — `.env.example` 참고 (빌드 시 반영)
+- 모든 화면 하단 중앙에 앱 버전이 상시 표기됨 (Game.tsx 공통 푸터)

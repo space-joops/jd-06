@@ -6,6 +6,7 @@ import { usePwa, type PwaApi } from "@/hooks/usePwa";
 import { orbitInfo } from "@/lib/game";
 import { notifyApproach } from "@/lib/notify";
 import { APP_VERSION } from "@/lib/version";
+import InstallToast from "./InstallToast";
 import Stars from "./Stars";
 import SettleModal from "./panels/SettleModal";
 import AdoptScreen from "./screens/AdoptScreen";
@@ -57,6 +58,11 @@ export default function Game() {
             </button>
           </div>
         )}
+        <InstallToast pwa={pwa} />
+        {/* 모든 화면 공통 버전 표기 */}
+        <p className="pointer-events-none absolute inset-x-0 bottom-0.5 z-20 text-center text-[10px] text-white/30">
+          v{APP_VERSION}
+        </p>
       </main>
     </div>
   );
@@ -86,7 +92,6 @@ function Splash() {
     <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3">
       <span className="anim-twinkle text-4xl">✨</span>
       <h1 className="text-xl font-bold tracking-widest">아스트로펫</h1>
-      <p className="absolute bottom-6 text-xs text-white/35">v{APP_VERSION}</p>
     </div>
   );
 }
