@@ -39,9 +39,11 @@
 - 모바일 퍼스트: max-w 430px 중앙 프레임, 100dvh
 
 # 기술 로드맵
-- **Phase 1 (현재)**: Next.js 15 App Router + localStorage 싱글플레이. 코어 루프 완성
-- **Phase 2**: 계정 + DB(Supabase 등) + 서버 시간 검증
-- **Phase 3**: Web Push 알림("펫이 5분 뒤 상공을 지나요") + PWA 홈 화면 설치
+- **Phase 1 (완료)**: Next.js 15 App Router + localStorage 싱글플레이. 코어 루프 완성
+- **Phase 2 (완료)**: PWA — manifest/아이콘/서비스워커, 홈 화면 설치 안내(beforeinstallprompt + iOS 가이드), 새 버전 업데이트 배너, 재회 윈도우 로컬 알림, 앱 버전 표시(package.json과 빌드 시 동기, `NEXT_PUBLIC_APP_VERSION`)
+  - 로컬 알림 한계: 탭이 열려 있는(백그라운드 포함) 동안만 동작. 앱을 완전히 닫았을 때의 푸시는 Phase 3 서버 도입 후 지원
+  - SW 캐시는 `sw.js?v=<버전>` 쿼리로 버전링 — 배포 시 package.json 버전을 올리면 업데이트 플로우가 동작
+- **Phase 3 (차후)**: 계정 + DB(Supabase 등) + 서버 시간 검증 + Web Push("펫이 5분 뒤 상공을 지나요")
 - **Phase 4**: 소셜 — 리더보드, 공유 카드, 인류 누적 정화량 게이지
 
 # 코드 구조 (Phase 1)

@@ -15,6 +15,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "아스트로펫",
   description: "우주쓰레기를 먹는 나의 펫과 교감하는 힐링 게임",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "아스트로펫",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {

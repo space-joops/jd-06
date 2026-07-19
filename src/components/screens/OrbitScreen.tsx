@@ -10,12 +10,13 @@ import LettersPanel from "@/components/panels/LettersPanel";
 import SettingsPanel from "@/components/panels/SettingsPanel";
 import Sheet from "@/components/panels/Sheet";
 import type { GameApi } from "@/hooks/useGame";
+import type { PwaApi } from "@/hooks/usePwa";
 import { DEBRIS_DEFS, ORBIT_MS, WINDOW_RATIO } from "@/lib/constants";
 import { currentMood, formatMMSS, getExpression, orbitInfo } from "@/lib/game";
 
 type PanelKind = "letters" | "debris" | "settings" | null;
 
-export default function OrbitScreen({ api }: { api: GameApi }) {
+export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi }) {
   const { state, now } = api;
   const orbit = orbitInfo(state.launchedAt ?? now, now);
   const mood = currentMood(state, now);
@@ -190,7 +191,7 @@ export default function OrbitScreen({ api }: { api: GameApi }) {
       )}
       {panel === "settings" && (
         <Sheet title="설정" onClose={() => setPanel(null)}>
-          <SettingsPanel onReset={api.reset} />
+          <SettingsPanel pwa={pwa} onReset={api.reset} />
         </Sheet>
       )}
     </div>
