@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import CollectGame from "@/components/CollectGame";
 import Gauge, { moodColor } from "@/components/Gauge";
 import { Hearts, useHearts } from "@/components/Hearts";
 import OrbitView from "@/components/OrbitView";
@@ -11,8 +12,9 @@ import SettingsPanel from "@/components/panels/SettingsPanel";
 import Sheet from "@/components/panels/Sheet";
 import type { GameApi } from "@/hooks/useGame";
 import type { PwaApi } from "@/hooks/usePwa";
-import { DEBRIS_DEFS, ORBIT_MS, WINDOW_RATIO } from "@/lib/constants";
+import { DEBRIS_DEFS, ORBIT_MS, REUNION_WINDOW_RATIO } from "@/lib/constants";
 import { currentMood, formatMMSS, getExpression, orbitInfo } from "@/lib/game";
+import type { DebrisId } from "@/lib/types";
 
 type PanelKind = "letters" | "debris" | "settings" | null;
 
@@ -23,12 +25,13 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
   const unread = state.letters.filter((l) => !l.read).length;
 
   const [panel, setPanel] = useState<PanelKind>(null);
+  const [collecting, setCollecting] = useState(false);
   const { hearts, spawn } = useHearts();
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const snackUsed = state.lastSnackOrbit >= orbit.index;
-  const coopUsed = state.lastCoopOrbit >= orbit.index;
+  const snackUsed = state.lastSnackOrbit >= orbit.windowIndex;
+  const coopUsed = state.lastCoopOrbit >= orbit.windowIndex;
   const farSide = orbit.phase > 0.25 && orbit.phase < 0.75;
 
   const showToast = (msg: string) => {
@@ -51,11 +54,17 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
     }
   };
 
-  const onCoop = () => {
-    const items = api.doCoop();
-    if (items.length === 0) return;
+  const openCoop = () => {
+    if (coopUsed || !orbit.inWindow) return;
+    setCollecting(true);
+  };
+
+  const onCoopFinish = (items: DebrisId[]) => {
+    setCollecting(false);
+    const got = api.doCoopItems(items);
+    if (got.length === 0) return;
     const counts = new Map<string, number>();
-    for (const id of items) counts.set(id, (counts.get(id) ?? 0) + 1);
+    for (const id of got) counts.set(id, (counts.get(id) ?? 0) + 1);
     const summary = [...counts.entries()]
       .map(([id, n]) => {
         const d = DEBRIS_DEFS.find((x) => x.id === id)!;
@@ -116,7 +125,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
               <div
                 className="h-full rounded-full bg-mint transition-all duration-1000"
                 style={{
-                  width: `${(orbit.windowRemainMs / (ORBIT_MS * WINDOW_RATIO)) * 100}%`,
+                  width: `${(orbit.windowRemainMs / (ORBIT_MS * REUNION_WINDOW_RATIO)) * 100}%`,
                 }}
               />
             </div>
@@ -132,7 +141,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
                 {snackUsed ? "간식 완료 ✔" : "간식 주기 🍬"}
               </button>
               <button
-                onClick={onCoop}
+                onClick={openCoop}
                 disabled={coopUsed}
                 className="flex-1 rounded-xl bg-mint py-3 text-sm font-bold text-space-900 transition active:scale-95 disabled:opacity-35"
               >
@@ -193,6 +202,16 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
         <Sheet title="설정" onClose={() => setPanel(null)}>
           <SettingsPanel pwa={pwa} onReset={api.reset} />
         </Sheet>
+      )}
+
+      {/* 함께 수거 미니게임 */}
+      {collecting && (
+        <CollectGame
+          color={state.pet.color}
+          suit={state.pet.suit}
+          onFinish={onCoopFinish}
+          onClose={() => setCollecting(false)}
+        />
       )}
     </div>
   );

@@ -1,7 +1,5 @@
 import {
   BOND_GOAL,
-  COOP_MAX,
-  COOP_MIN,
   COOP_MOOD_GAIN,
   DEBRIS_DEFS,
   DEBRIS_PER_ORBIT,
@@ -19,8 +17,8 @@ import {
   PET_BOND_GAIN,
   PET_COOLDOWN_MS,
   PET_MOOD_GAIN,
+  REUNION_HALF,
   SNACK_MOOD_GAIN,
-  WINDOW_RATIO,
 } from "./constants";
 import { makeLetter, makeWelcomeLetter } from "./letters";
 import type {
@@ -45,15 +43,22 @@ export function currentMood(state: GameState, now: number): number {
 
 export function orbitInfo(launchedAt: number, now: number): OrbitInfo {
   const elapsed = Math.max(0, now - launchedAt);
-  const index = Math.floor(elapsed / ORBIT_MS);
-  const phase = (elapsed % ORBIT_MS) / ORBIT_MS;
-  const inWindow = phase < WINDOW_RATIO;
+  const raw = elapsed / ORBIT_MS;
+  const index = Math.floor(raw);
+  const phase = raw - index; // 0~1, 0 = 상공 정점
+  // 상공(phase 0) 기준 부호 있는 거리 (−0.5~0.5). 재회는 상공을 가운데로 좌우 대칭.
+  const off = phase > 0.5 ? phase - 1 : phase;
+  const inWindow = Math.abs(off) <= REUNION_HALF;
   return {
     index,
     phase,
     inWindow,
-    windowRemainMs: inWindow ? (WINDOW_RATIO - phase) * ORBIT_MS : 0,
-    nextWindowInMs: inWindow ? 0 : (1 - phase) * ORBIT_MS,
+    // 윈도우 안이면 상공을 지나 +45°(=REUNION_HALF)에 도달할 때까지 남은 시간
+    windowRemainMs: inWindow ? (REUNION_HALF - off) * ORBIT_MS : 0,
+    // 윈도우 밖(phase∈(REUNION_HALF, 1−REUNION_HALF))이면 다음 −45° 진입까지
+    nextWindowInMs: inWindow ? 0 : (1 - REUNION_HALF - phase) * ORBIT_MS,
+    // 상공 통과 기준 재회 번호. 경계를 걸쳐도 한 재회는 하나의 값으로 묶인다.
+    windowIndex: Math.round(raw),
   };
 }
 
@@ -259,43 +264,46 @@ export function enterOrbit(state: GameState, now: number): GameState {
   };
 }
 
-/** 재회 윈도우 간식 — 윈도우(=궤도)당 1회 */
+/** 재회 윈도우 간식 — 재회 패스당 1회 */
 export function giveSnack(state: GameState, now: number): GameState {
   if (state.stage !== "orbit" || state.launchedAt === null) return state;
   const orbit = orbitInfo(state.launchedAt, now);
-  if (!orbit.inWindow || state.lastSnackOrbit >= orbit.index) return state;
+  if (!orbit.inWindow || state.lastSnackOrbit >= orbit.windowIndex) return state;
   return {
     ...state,
     mood: clamp(currentMood(state, now) + SNACK_MOOD_GAIN),
     moodAt: now,
-    lastSnackOrbit: orbit.index,
+    lastSnackOrbit: orbit.windowIndex,
   };
 }
 
-/** 재회 윈도우 협동 수거 — 궤도당 1회, 쓰레기 버스트 획득 */
-export function coopCollect(
+/**
+ * 재회 윈도우 협동 수거 — 재회 패스당 1회. 미니게임에서 실제로 탭해 모은
+ * 아이템 목록을 받아 도감·총 수거에 합산한다. 빈 배열이면 상태 불변(패스 미소비).
+ */
+export function coopCollectWith(
   state: GameState,
-  now: number
+  now: number,
+  items: DebrisId[]
 ): { state: GameState; items: DebrisId[] } {
   if (state.stage !== "orbit" || state.launchedAt === null) {
     return { state, items: [] };
   }
   const orbit = orbitInfo(state.launchedAt, now);
-  if (!orbit.inWindow || state.lastCoopOrbit >= orbit.index) {
+  if (!orbit.inWindow || state.lastCoopOrbit >= orbit.windowIndex) {
     return { state, items: [] };
   }
-  const count = COOP_MIN + Math.floor(Math.random() * (COOP_MAX - COOP_MIN + 1));
-  const items = Array.from({ length: count }, () => rollDebris());
+  if (items.length === 0) return { state, items: [] };
   const debris = { ...state.debris };
   for (const id of items) debris[id] += 1;
   return {
     state: {
       ...state,
       debris,
-      debrisTotal: state.debrisTotal + count,
+      debrisTotal: state.debrisTotal + items.length,
       mood: clamp(currentMood(state, now) + COOP_MOOD_GAIN),
       moodAt: now,
-      lastCoopOrbit: orbit.index,
+      lastCoopOrbit: orbit.windowIndex,
     },
     items,
   };

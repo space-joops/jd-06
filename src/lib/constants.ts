@@ -1,9 +1,14 @@
 import type { DebrisDef, PetColor, Rarity, SuitColor } from "./types";
 
-// ── 시간 설계 (압축 시간: 실제 90분 궤도의 1/6) ──────────────────────
-export const ORBIT_MS = 15 * 60_000;
-/** 궤도의 앞 20% = 3분이 접근(재회) 윈도우 */
-export const WINDOW_RATIO = 0.2;
+// ── 시간 설계 (압축 시간) ────────────────────────────────────────────
+/** 궤도 한 바퀴 = 3분 */
+export const ORBIT_MS = 3 * 60_000;
+/** 재회 윈도우 = 우리 집 상공(phase 0) 기준 좌우 45° */
+export const REUNION_HALF_DEG = 45;
+/** phase 단위 반각 (45/360 = 0.125). |상공 기준 거리| ≤ 이 값이면 윈도우 */
+export const REUNION_HALF = REUNION_HALF_DEG / 360;
+/** 윈도우 총 길이 비율 (좌우 45° = 궤도의 25%) — 진행 바 분모용 */
+export const REUNION_WINDOW_RATIO = REUNION_HALF * 2;
 
 // ── 감정 시스템 ──────────────────────────────────────────────────────
 /** 기분 1포인트가 감소하는 데 걸리는 시간 (100→0까지 8시간) */
@@ -32,8 +37,23 @@ export const FEED_COOLDOWN_MS =
 export const DEBRIS_PER_ORBIT = 6;
 /** 기분이 0이어도 유지되는 최저 효율 */
 export const MOOD_FACTOR_FLOOR = 0.25;
-export const COOP_MIN = 8;
-export const COOP_MAX = 12;
+
+// ── 함께 수거하기 미니게임 ───────────────────────────────────────────
+/** 한 세션의 라운드 수 (HUD "N 중 M") */
+export const COLLECT_ROUNDS = 2;
+/** 라운드당 수거 목표 개수 (2×5 = 10, 협동 버스트 8~12 범위) */
+export const COLLECT_TARGET_PER_ROUND = 5;
+/** 파편 스폰 간격(ms) */
+export const COLLECT_SPAWN_MS = 700;
+/** 파편이 화면을 가로질러 떠오르는 시간(ms) — 이 안에 탭해야 수거 */
+export const COLLECT_RISE_MS = 3200;
+/** 희귀도별 질량(kg) — HUD 무게 합산용 */
+export const RARITY_MASS_KG: Record<Rarity, number> = {
+  common: 0.2,
+  uncommon: 0.5,
+  rare: 1.0,
+  legendary: 3.0,
+};
 
 // ── 편지 ─────────────────────────────────────────────────────────────
 export const LETTER_INTERVAL_MS = 45 * 60_000;

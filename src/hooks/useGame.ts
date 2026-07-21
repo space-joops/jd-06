@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SETTLE_MODAL_MIN_AWAY_MS } from "@/lib/constants";
 import {
   chooseEgg,
-  coopCollect,
+  coopCollectWith,
   createInitialState,
   enterOrbit,
   feed,
@@ -43,8 +43,8 @@ export interface GameApi {
   launchWithSuit: (suit: SuitColor) => void;
   enterOrbit: () => void;
   doSnack: () => boolean;
-  /** 협동 수거. 획득한 아이템 목록 반환 (불가 시 빈 배열) */
-  doCoop: () => DebrisId[];
+  /** 협동 수거 — 미니게임에서 모은 아이템을 확정. 실제 반영된 목록 반환 (불가 시 빈 배열) */
+  doCoopItems: (items: DebrisId[]) => DebrisId[];
   markLetterRead: (id: string) => void;
   reset: () => void;
 }
@@ -139,14 +139,14 @@ export function useGame(): GameApi | null {
     launchWithSuit: (suit) => run((s) => launchWithSuit(s, suit)),
     enterOrbit: () => run((s, t) => enterOrbit(s, t)),
     doSnack: () => run((s, t) => giveSnack(s, t)),
-    doCoop: () => {
+    doCoopItems: (items) => {
       const s = stateRef.current;
       if (!s) return [];
       const t = Date.now();
       const settled = settle(s, t).state;
-      const { state: next, items } = coopCollect(settled, t);
+      const { state: next, items: got } = coopCollectWith(settled, t, items);
       commit(next, t);
-      return items;
+      return got;
     },
     markLetterRead: (id) => run((s) => markLetterRead(s, id)),
     reset: () => {

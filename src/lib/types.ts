@@ -79,11 +79,17 @@ export interface SettleReport {
 }
 
 export interface OrbitInfo {
-  /** 발사 후 몇 번째 궤도인지 (0부터) */
+  /** 발사 후 몇 번째 궤도인지 (0부터) — 궤도 카운터 표시용 */
   index: number;
-  /** 현재 궤도에서의 진행률 0~1. 0 = 주인 상공 통과 시작 */
+  /** 현재 궤도에서의 진행률 0~1. 0 = 주인 상공 정점 */
   phase: number;
   inWindow: boolean;
   windowRemainMs: number;
   nextWindowInMs: number;
+  /**
+   * 재회 패스 번호 (상공 통과 기준, 0부터). 윈도우가 phase 0 경계를 걸쳐
+   * 두 index로 나뉘어도 한 번의 재회는 하나의 windowIndex로 묶인다.
+   * 윈도우당 1회 액션(간식·협동 수거)의 중복 방지 키로 사용.
+   */
+  windowIndex: number;
 }
