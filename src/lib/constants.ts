@@ -38,15 +38,33 @@ export const DEBRIS_PER_ORBIT = 6;
 /** 기분이 0이어도 유지되는 최저 효율 */
 export const MOOD_FACTOR_FLOOR = 0.25;
 
-// ── 함께 수거하기 미니게임 ───────────────────────────────────────────
-/** 한 세션의 라운드 수 (HUD "N 중 M") */
-export const COLLECT_ROUNDS = 2;
-/** 라운드당 수거 목표 개수 (2×5 = 10, 협동 버스트 8~12 범위) */
-export const COLLECT_TARGET_PER_ROUND = 5;
-/** 파편 스폰 간격(ms) */
-export const COLLECT_SPAWN_MS = 700;
-/** 파편이 화면을 가로질러 떠오르는 시간(ms) — 이 안에 탭해야 수거 */
-export const COLLECT_RISE_MS = 3200;
+// ── 함께 수거하기: 우주유영 아케이드 게임 ────────────────────────────
+/** 분사 가스 최대치(=게임 시작 잔량). 0이 되면 게임 종료 */
+export const GAS_MAX = 100;
+/** 최대 분사 시 추력 가속도 (px/s²) */
+export const THRUST_ACCEL = 900;
+/** 최대 분사 시 초당 가스 소모량 */
+export const GAS_BURN_PER_SEC = 11;
+/** 관성 감쇠 계수(초당). 우주 느낌을 위해 아주 약하게만 */
+export const SPACE_DRAG = 0.35;
+/** 가상 조이스틱 최대 반경(px) — 이 거리에서 분사 100% */
+export const JOY_RADIUS = 72;
+/** 위성과 조우 시 충전되는 가스량 */
+export const SAT_REFUEL = 28;
+/** 펫 히트박스 반경(px) */
+export const PET_RADIUS = 30;
+/** 우주쓰레기 스폰 간격(ms) */
+export const DEBRIS_SPAWN_MS = 820;
+/** 화면에 동시에 떠 있는 쓰레기 최대 수 */
+export const DEBRIS_MAX_ON_SCREEN = 14;
+/** 스폰되는 파편이 기분 충전 아이템일 확률 */
+export const MOOD_ITEM_CHANCE = 0.14;
+/** 기분 충전 아이템 1개당 회복량 */
+export const MOOD_ITEM_GAIN = 6;
+/** 위성 스폰 간격(ms) */
+export const SAT_SPAWN_MS = 5200;
+/** 스타링크 트레인일 때 줄지어 나오는 위성 수 */
+export const STARLINK_TRAIN = 5;
 /** 희귀도별 질량(kg) — HUD 무게 합산용 */
 export const RARITY_MASS_KG: Record<Rarity, number> = {
   common: 0.2,

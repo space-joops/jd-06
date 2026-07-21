@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import CollectGame from "@/components/CollectGame";
+import SpacewalkGame, { type CollectResult } from "@/components/SpacewalkGame";
 import Gauge, { moodColor } from "@/components/Gauge";
 import { Hearts, useHearts } from "@/components/Hearts";
 import OrbitView from "@/components/OrbitView";
@@ -25,7 +25,8 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
   const unread = state.letters.filter((l) => !l.read).length;
 
   const [panel, setPanel] = useState<PanelKind>(null);
-  const [collecting, setCollecting] = useState(false);
+  /** null = 게임 닫힘, "reunion" = 재회 윈도우(패스 소비), "free" = 설정에서 언제나 */
+  const [collectMode, setCollectMode] = useState<"reunion" | "free" | null>(null);
   const { hearts, spawn } = useHearts();
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,22 +57,28 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
 
   const openCoop = () => {
     if (coopUsed || !orbit.inWindow) return;
-    setCollecting(true);
+    setCollectMode("reunion");
   };
 
-  const onCoopFinish = (items: DebrisId[]) => {
-    setCollecting(false);
-    const got = api.doCoopItems(items);
-    if (got.length === 0) return;
-    const counts = new Map<string, number>();
+  const onCollectExit = (result: CollectResult) => {
+    const mode = collectMode;
+    setCollectMode(null);
+    const got = api.doCollectResult(result.items, result.moodGain, {
+      coopPass: mode === "reunion",
+    });
+    if (got.length === 0 && result.moodGain <= 0) return;
+    const counts = new Map<DebrisId, number>();
     for (const id of got) counts.set(id, (counts.get(id) ?? 0) + 1);
-    const summary = [...counts.entries()]
-      .map(([id, n]) => {
-        const d = DEBRIS_DEFS.find((x) => x.id === id)!;
-        return `${d.icon} ${d.name} ×${n}`;
-      })
-      .join(" · ");
-    showToast(`함께 수거 성공! ${summary}`);
+    const parts = [...counts.entries()].map(([id, n]) => {
+      const d = DEBRIS_DEFS.find((x) => x.id === id)!;
+      return `${d.icon}${n}`;
+    });
+    if (result.moodGain > 0) parts.push(`💖+${Math.round(result.moodGain)}`);
+    showToast(
+      got.length > 0
+        ? `수거 완료! ${parts.join(" · ")}`
+        : `기분이 좋아졌어요 💖+${Math.round(result.moodGain)}`
+    );
   };
 
   return (
@@ -145,7 +152,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
                 disabled={coopUsed}
                 className="flex-1 rounded-xl bg-mint py-3 text-sm font-bold text-space-900 transition active:scale-95 disabled:opacity-35"
               >
-                {coopUsed ? "수거 완료 ✔" : "함께 수거하기 🧹"}
+                {coopUsed ? "수거 완료 ✔" : "함께 수거하기 🧑‍🚀"}
               </button>
             </div>
           </>
@@ -200,17 +207,23 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
       )}
       {panel === "settings" && (
         <Sheet title="설정" onClose={() => setPanel(null)}>
-          <SettingsPanel pwa={pwa} onReset={api.reset} />
+          <SettingsPanel
+            pwa={pwa}
+            onReset={api.reset}
+            onPlayCollect={() => {
+              setPanel(null);
+              setCollectMode("free");
+            }}
+          />
         </Sheet>
       )}
 
-      {/* 함께 수거 미니게임 */}
-      {collecting && (
-        <CollectGame
+      {/* 함께 수거하기: 우주유영 게임 */}
+      {collectMode && (
+        <SpacewalkGame
           color={state.pet.color}
           suit={state.pet.suit}
-          onFinish={onCoopFinish}
-          onClose={() => setCollecting(false)}
+          onExit={onCollectExit}
         />
       )}
     </div>

@@ -278,32 +278,44 @@ export function giveSnack(state: GameState, now: number): GameState {
 }
 
 /**
- * 재회 윈도우 협동 수거 — 재회 패스당 1회. 미니게임에서 실제로 탭해 모은
- * 아이템 목록을 받아 도감·총 수거에 합산한다. 빈 배열이면 상태 불변(패스 미소비).
+ * 우주유영 수거 게임 결과를 반영한다. 게임에서 모은 파편(items)과 기분 충전량(moodGain)을
+ * 도감·총 수거·기분에 합산한다.
+ * - coopPass=true(재회 윈도우 실행): 윈도우 안 + 아직 안 쓴 재회 패스일 때만 반영하며
+ *   COOP_MOOD_GAIN 보너스 + 패스 소비. (재회당 1회)
+ * - coopPass=false(설정에서 언제나 실행): 게이팅 없이 반영, 패스 미소비.
+ * items·moodGain이 모두 없으면 상태 불변.
  */
-export function coopCollectWith(
+export function applyCollectResult(
   state: GameState,
   now: number,
-  items: DebrisId[]
+  items: DebrisId[],
+  moodGain: number,
+  opts?: { coopPass?: boolean }
 ): { state: GameState; items: DebrisId[] } {
   if (state.stage !== "orbit" || state.launchedAt === null) {
     return { state, items: [] };
   }
-  const orbit = orbitInfo(state.launchedAt, now);
-  if (!orbit.inWindow || state.lastCoopOrbit >= orbit.windowIndex) {
-    return { state, items: [] };
+  const coopPass = opts?.coopPass ?? false;
+  if (coopPass) {
+    const orbit = orbitInfo(state.launchedAt, now);
+    if (!orbit.inWindow || state.lastCoopOrbit >= orbit.windowIndex) {
+      return { state, items: [] };
+    }
   }
-  if (items.length === 0) return { state, items: [] };
+  if (items.length === 0 && moodGain <= 0) return { state, items: [] };
   const debris = { ...state.debris };
   for (const id of items) debris[id] += 1;
+  const bonus = coopPass ? COOP_MOOD_GAIN : 0;
   return {
     state: {
       ...state,
       debris,
       debrisTotal: state.debrisTotal + items.length,
-      mood: clamp(currentMood(state, now) + COOP_MOOD_GAIN),
+      mood: clamp(currentMood(state, now) + moodGain + bonus),
       moodAt: now,
-      lastCoopOrbit: orbit.windowIndex,
+      lastCoopOrbit: coopPass
+        ? orbitInfo(state.launchedAt, now).windowIndex
+        : state.lastCoopOrbit,
     },
     items,
   };

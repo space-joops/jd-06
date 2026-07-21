@@ -6,14 +6,33 @@ import type { PwaApi } from "@/hooks/usePwa";
 export default function SettingsPanel({
   pwa,
   onReset,
+  onPlayCollect,
 }: {
   pwa: PwaApi;
   onReset: () => void;
+  /** 제공되면 "함께 수거하기" 연습 버튼 노출 (궤도 단계에서 언제나 실행) */
+  onPlayCollect?: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 함께 수거하기 (언제나) */}
+      {onPlayCollect && (
+        <section className="rounded-2xl bg-white/5 p-4">
+          <span className="text-sm font-semibold">함께 수거하기 🧑‍🚀</span>
+          <p className="mt-2 text-xs leading-relaxed text-white/55">
+            재회 시간이 아니어도 언제든 펫과 우주유영을 하며 우주쓰레기를 수거할 수 있어요.
+          </p>
+          <button
+            onClick={onPlayCollect}
+            className="mt-3 w-full rounded-xl bg-mint py-2.5 text-sm font-bold text-space-900 transition active:scale-95"
+          >
+            지금 수거하러 가기
+          </button>
+        </section>
+      )}
+
       {/* 재회 알림 */}
       <section className="rounded-2xl bg-white/5 p-4">
         <div className="flex items-center justify-between">

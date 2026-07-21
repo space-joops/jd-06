@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SETTLE_MODAL_MIN_AWAY_MS } from "@/lib/constants";
 import {
+  applyCollectResult,
   chooseEgg,
-  coopCollectWith,
   createInitialState,
   enterOrbit,
   feed,
@@ -43,8 +43,16 @@ export interface GameApi {
   launchWithSuit: (suit: SuitColor) => void;
   enterOrbit: () => void;
   doSnack: () => boolean;
-  /** 협동 수거 — 미니게임에서 모은 아이템을 확정. 실제 반영된 목록 반환 (불가 시 빈 배열) */
-  doCoopItems: (items: DebrisId[]) => DebrisId[];
+  /**
+   * 우주유영 수거 게임 결과 확정 — 모은 파편·기분 충전량을 반영.
+   * coopPass=true면 재회 패스 소비(재회 윈도우 실행), false면 무제한(설정 실행).
+   * 실제 도감에 반영된 아이템 목록 반환 (불가 시 빈 배열).
+   */
+  doCollectResult: (
+    items: DebrisId[],
+    moodGain: number,
+    opts?: { coopPass?: boolean }
+  ) => DebrisId[];
   markLetterRead: (id: string) => void;
   reset: () => void;
 }
@@ -139,12 +147,18 @@ export function useGame(): GameApi | null {
     launchWithSuit: (suit) => run((s) => launchWithSuit(s, suit)),
     enterOrbit: () => run((s, t) => enterOrbit(s, t)),
     doSnack: () => run((s, t) => giveSnack(s, t)),
-    doCoopItems: (items) => {
+    doCollectResult: (items, moodGain, opts) => {
       const s = stateRef.current;
       if (!s) return [];
       const t = Date.now();
       const settled = settle(s, t).state;
-      const { state: next, items: got } = coopCollectWith(settled, t, items);
+      const { state: next, items: got } = applyCollectResult(
+        settled,
+        t,
+        items,
+        moodGain,
+        opts
+      );
       commit(next, t);
       return got;
     },

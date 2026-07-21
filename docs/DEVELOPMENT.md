@@ -24,7 +24,8 @@
 | v0.1.0 (Phase 1) | 코어 루프 전체: 분양→부화→이름→육성→슈트→발사→궤도. 자동 수거·오프라인 정산·우주 편지·도감·localStorage 저장 |
 | v0.2.0 (Phase 2) | PWA: manifest·아이콘·서비스워커, 설치 안내(설정 패널), SW 업데이트 배너, 재회 로컬 알림, 앱 버전 표시 |
 | v0.3.0 | 젤리 쿨다운 환경 변수화, 미설치 시 설치 안내 토스트, 전 화면 하단 버전 표기 |
-| v0.4.0 | 재회 윈도우를 상공 ±45°로 확장, 궤도 주기 15→3분, "함께 수거하기"를 탭 수거 미니게임(`CollectGame`)으로 |
+| v0.4.0 | 재회 윈도우를 상공 ±45°로 확장, 궤도 주기 15→3분, "함께 수거하기"를 탭 수거 미니게임으로 |
+| v0.5.0 | "함께 수거하기"를 우주유영 아케이드 게임(`SpacewalkGame`, 캔버스+rAF)으로 재설계: 가상 조이스틱 분사 이동·분사 가스 소진 시 종료·사방 쓰레기+기분 아이템·유명 위성 10종(스타링크 트레인)으로 가스 충전·지구 자전+달. 설정에서 언제나 실행 가능 |
 
 전 플로우를 Chrome 자동화로 실제 플레이하며 검증 완료 (정산 수치, SW 업데이트 사이클 포함).
 
@@ -55,6 +56,7 @@ src/
     constants.ts    모든 튜닝 수치와 도감 정의 (밸런스 조정은 여기만)
     game.ts         정산(settle)·궤도(orbitInfo)·기분(currentMood)·액션 함수들
     letters.ts      편지 템플릿 풀(밝은 톤 7 + 그리운 톤 4) + 웰컴 편지
+    satellites.ts   우주유영 게임 위성 10종 정의 + 캔버스 드로잉(진행축 +x)
     storage.ts      localStorage 로드/저장 (version 체크)
     notify.ts       재회 로컬 알림 + 알림 설정 저장
     version.ts      APP_VERSION 상수
@@ -66,7 +68,7 @@ src/
                     설치 토스트, 공통 버전 푸터
     PetSvg.tsx      캐릭터 (색 3종 × 표정 5종 × 슈트 3색 레이어)
     OrbitView.tsx   지구+궤도+펫 위치 시각화
-    CollectGame.tsx 함께 수거 미니게임 (떠오르는 파편 탭 수거, 라운드제 오버레이)
+    SpacewalkGame.tsx 함께 수거하기 = 우주유영 아케이드 게임 (캔버스 + rAF, 물리·조이스틱)
     EggSvg.tsx / Stars.tsx / Gauge.tsx / Hearts.tsx / InstallToast.tsx
     screens/        Adopt → Egg → Name → Raising → Prep → Launching → Orbit
     panels/         Sheet(바텀시트 셸), LettersPanel, DebrisPanel, SettingsPanel, SettleModal
@@ -116,7 +118,8 @@ scripts/
 | 재회 윈도우 | 상공 ±45° = 궤도의 25% (≈45초) | `REUNION_HALF_DEG=45` |
 | 기분 감쇠 | 100→0까지 8시간 | |
 | 자동 수거 | 기분 100 기준 궤도당 6개 | 최저 효율 25% |
-| 협동 수거 | 미니게임: 2라운드×5개 탭 수거 + 기분 +10 | 재회 패스당 1회 |
+| 함께 수거하기 | 우주유영 게임(가스 소진 시 종료) | 재회=패스당 1회+기분보너스 / 설정=무제한 |
+| 게임 가스/추력 | GAS_MAX 100, THRUST_ACCEL 900, GAS_BURN 11/s, 위성 충전 +28 | `constants.ts` |
 | 간식 | 기분 +15 | 재회 패스당 1회 |
 | 쓰다듬기(궤도) | 기분 +4, 쿨다운 2.5초 | 윈도우 중에만 |
 | 쓰다듬기(육성) | 유대감 +6, 기분 +2, 쿨다운 2.5초 | |
@@ -160,7 +163,9 @@ localStorage 키:
 - 팔레트: 배경 #0b1026→#241a4d, 민트 #7de8c3, 핑크 #f9a8d4, 라벤더 #c4b5fd, 별노랑 #ffe9a8.
   Tailwind 토큰은 `globals.css`의 `@theme`에 정의 (`bg-mint`, `text-star` 등).
 - 애니메이션은 전부 `globals.css`의 keyframes + 유틸 클래스 (`anim-bob`, `pet-eye`(깜빡임),
-  `anim-ring`, `anim-rocket` 등). JS 애니메이션 없음.
+  `anim-ring`, `anim-rocket` 등). JS 애니메이션 없음 — **단, `SpacewalkGame`은 물리 기반
+  아케이드 게임이라 캔버스 + `requestAnimationFrame` 루프를 쓰는 의도된 예외**(엔티티/HUD는
+  ref로 imperative 갱신, React state는 mounted·게임오버 정산만).
 - `PetSvg`: 표정은 `getExpression(state, now)`가 결정 — 발사/윈도우 = excited,
   기분 70+/40+/미만 = happy/neutral/lonely. 그라디언트 id는 `astro-body-${color}`로 결정적.
 - `OrbitView` 좌표계: viewBox 360×240, 지구 중심 (180,330) r150, 궤도 r210.
