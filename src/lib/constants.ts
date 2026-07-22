@@ -39,8 +39,13 @@ export const DEBRIS_PER_ORBIT = 6;
 export const MOOD_FACTOR_FLOOR = 0.25;
 
 // ── 함께 수거하기: 우주유영 아케이드 게임 ────────────────────────────
-/** 분사 가스 최대치(=게임 시작 잔량). 0이 되면 게임 종료 */
-export const GAS_MAX = 100;
+/**
+ * 초기 분사 가스량(=탱크 최대). 0이 되면 게임 종료.
+ * NEXT_PUBLIC_GAS_MAX(양수)로 재정의 가능 — 기본 70 (구 100 대비 30%↓).
+ */
+const envGas = Number(process.env.NEXT_PUBLIC_GAS_MAX);
+export const GAS_MAX =
+  Number.isFinite(envGas) && envGas > 0 ? envGas : 70;
 /** 최대 분사 시 추력 가속도 (px/s²) */
 export const THRUST_ACCEL = 900;
 /** 최대 분사 시 초당 가스 소모량 */
@@ -61,10 +66,14 @@ export const DEBRIS_MAX_ON_SCREEN = 14;
 export const MOOD_ITEM_CHANCE = 0.14;
 /** 기분 충전 아이템 1개당 회복량 */
 export const MOOD_ITEM_GAIN = 6;
-/** 위성 스폰 간격(ms) */
-export const SAT_SPAWN_MS = 5200;
+/** 위험물(붉은 고온 파편) 스폰 간격(ms). 충돌하면 가스 감소 */
+export const HAZARD_SPAWN_MS = 3800;
+/** 위험물 충돌 시 깎이는 가스량 */
+export const GAS_HAZARD_PENALTY = 20;
+/** 위성 스폰 간격(ms) — 등장 빈도 낮춤. 화면에 위성이 없을 때만 스폰 */
+export const SAT_SPAWN_MS = 9000;
 /** 스타링크 트레인일 때 줄지어 나오는 위성 수 */
-export const STARLINK_TRAIN = 5;
+export const STARLINK_TRAIN = 6;
 /** 희귀도별 질량(kg) — HUD 무게 합산용 */
 export const RARITY_MASS_KG: Record<Rarity, number> = {
   common: 0.2,

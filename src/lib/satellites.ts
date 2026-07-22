@@ -13,6 +13,8 @@ export type SatKind =
 export interface SatelliteDef {
   id: string;
   name: string;
+  /** 본체에 표기할 영어 약칭. 빈 문자열이면 미표기(스타링크는 크래프트에 SpaceX 로고) */
+  label: string;
   kind: SatKind;
   body: string;
   panel: string;
@@ -22,16 +24,16 @@ export interface SatelliteDef {
 }
 
 export const SAT_DEFS: SatelliteDef[] = [
-  { id: "iss", name: "ISS", kind: "station", body: "#dbe1ea", panel: "#25407a", accent: "#ffd27a", r: 34 },
-  { id: "tiangong", name: "톈궁", kind: "station", body: "#ece6d6", panel: "#2f6b4f", accent: "#e05b5b", r: 32 },
-  { id: "hubble", name: "허블", kind: "hubble", body: "#c9ccd3", panel: "#2a4a8c", accent: "#ffd27a", r: 24 },
-  { id: "jwst", name: "제임스웹", kind: "jwst", body: "#ffd45e", panel: "#8b6cff", accent: "#b98cff", r: 26 },
-  { id: "starlink", name: "스타링크", kind: "starlink", body: "#eef2f7", panel: "#16263f", accent: "#ffffff", r: 22 },
-  { id: "sputnik", name: "스푸트니크", kind: "sputnik", body: "#cfd4dc", panel: "#8a939f", accent: "#eef2f7", r: 18 },
-  { id: "voyager", name: "보이저", kind: "dish", body: "#c6cad2", panel: "#5b6270", accent: "#ffd27a", r: 24 },
-  { id: "gps", name: "GPS", kind: "boxsat", body: "#d5dae2", panel: "#274d99", accent: "#9fd0ff", r: 22 },
-  { id: "goes", name: "GOES", kind: "boxsat", body: "#e3e7ee", panel: "#2b6b8c", accent: "#9fe0ff", r: 22 },
-  { id: "landsat", name: "랜드샛", kind: "boxsat", body: "#dbe0e8", panel: "#356b3f", accent: "#a7e6b0", r: 22 },
+  { id: "iss", name: "ISS", label: "ISS", kind: "station", body: "#dbe1ea", panel: "#25407a", accent: "#ffd27a", r: 34 },
+  { id: "tiangong", name: "톈궁", label: "TIANGONG", kind: "station", body: "#ece6d6", panel: "#2f6b4f", accent: "#e05b5b", r: 32 },
+  { id: "hubble", name: "허블", label: "HUBBLE", kind: "hubble", body: "#c9ccd3", panel: "#2a4a8c", accent: "#ffd27a", r: 24 },
+  { id: "jwst", name: "제임스웹", label: "JWST", kind: "jwst", body: "#ffd45e", panel: "#8b6cff", accent: "#b98cff", r: 26 },
+  { id: "starlink", name: "스타링크", label: "", kind: "starlink", body: "#eef2f7", panel: "#16263f", accent: "#ffffff", r: 22 },
+  { id: "sputnik", name: "스푸트니크", label: "SPUTNIK", kind: "sputnik", body: "#cfd4dc", panel: "#8a939f", accent: "#eef2f7", r: 18 },
+  { id: "voyager", name: "보이저", label: "VOYAGER", kind: "dish", body: "#c6cad2", panel: "#5b6270", accent: "#ffd27a", r: 24 },
+  { id: "gps", name: "GPS", label: "GPS", kind: "boxsat", body: "#d5dae2", panel: "#274d99", accent: "#9fd0ff", r: 22 },
+  { id: "goes", name: "GOES", label: "GOES", kind: "boxsat", body: "#e3e7ee", panel: "#2b6b8c", accent: "#9fe0ff", r: 22 },
+  { id: "landsat", name: "랜드샛", label: "LANDSAT", kind: "boxsat", body: "#dbe0e8", panel: "#356b3f", accent: "#a7e6b0", r: 22 },
 ];
 
 export const STARLINK_DEF = SAT_DEFS.find((s) => s.id === "starlink")!;
