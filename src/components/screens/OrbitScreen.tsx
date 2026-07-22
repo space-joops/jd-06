@@ -214,6 +214,13 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
               setPanel(null);
               setCollectMode("free");
             }}
+            shareStats={{
+              name: state.pet.name,
+              color: state.pet.color,
+              suit: state.pet.suit,
+              debrisTotal: state.debrisTotal,
+              createdAt: state.createdAt,
+            }}
           />
         </Sheet>
       )}

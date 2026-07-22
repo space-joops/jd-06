@@ -50,7 +50,16 @@
   - 로컬 알림 한계: 탭이 열려 있는(백그라운드 포함) 동안만 동작. 앱을 완전히 닫았을 때의 푸시는 Phase 3 서버 도입 후 지원
   - SW 캐시는 `sw.js?v=<버전>` 쿼리로 버전링 — 배포 시 package.json 버전을 올리면 업데이트 플로우가 동작
 - **Phase 3 (차후)**: 계정 + DB(Supabase 등) + 서버 시간 검증 + Web Push("펫이 5분 뒤 상공을 지나요")
-- **Phase 4**: 소셜 — 리더보드, 공유 카드, 인류 누적 정화량 게이지
+- **Phase 4**: 소셜 — 리더보드, 인류 누적 정화량 게이지 (공유 카드·OG 프리뷰는 v0.6.0에서 선반영)
+
+# 소셜 공유 (v0.6.0)
+- 설정의 "친구에게 자랑하기": 카카오톡·페이스북·X·인스타그램·링크복사 + "카드로 자랑하기"
+- 웹 표준 우선: Open Graph/Twitter 메타(`layout.tsx`, 정적 `public/og.png` 1200×630), Web Share
+  API/Level 2(이미지 공유), Clipboard, 표준 share-intent URL. 카카오톡만 공식 SDK(키 있을 때).
+- "카드로 자랑하기" = 캔버스로 펫(`PetSvg` 재사용)+정화량 이미지를 만들어 Web Share files로 공유
+  (미지원 시 다운로드). 인스타그램은 웹 인텐트가 없어 이 이미지 공유가 유일한 심리스 경로.
+- 공유 로직은 `src/lib/share.ts`, UI는 `src/components/panels/SharePanel.tsx`.
+- env: `NEXT_PUBLIC_SITE_URL`(OG 절대경로), `NEXT_PUBLIC_KAKAO_JS_KEY`(카카오).
 
 # 코드 구조 (Phase 1)
 - `src/lib/` — 순수 게임 로직 (types, constants 튜닝 수치, game.ts 정산/궤도/액션, letters.ts 편지 템플릿, storage.ts)

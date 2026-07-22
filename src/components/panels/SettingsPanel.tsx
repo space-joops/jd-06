@@ -1,22 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import SharePanel from "@/components/panels/SharePanel";
 import type { PwaApi } from "@/hooks/usePwa";
+import type { ShareStats } from "@/lib/share";
 
 export default function SettingsPanel({
   pwa,
   onReset,
   onPlayCollect,
+  shareStats,
 }: {
   pwa: PwaApi;
   onReset: () => void;
   /** 제공되면 "함께 수거하기" 연습 버튼 노출 (궤도 단계에서 언제나 실행) */
   onPlayCollect?: () => void;
+  /** 제공되면 소셜 공유 섹션 노출 (궤도 단계에서 자랑) */
+  shareStats?: ShareStats;
 }) {
   const [confirming, setConfirming] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 친구에게 자랑하기 */}
+      {shareStats && <SharePanel stats={shareStats} />}
+
       {/* 함께 수거하기 (언제나) */}
       {onPlayCollect && (
         <section className="rounded-2xl bg-white/5 p-4">

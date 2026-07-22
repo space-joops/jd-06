@@ -28,6 +28,7 @@
 | v0.5.0 | "함께 수거하기"를 우주유영 아케이드 게임(`SpacewalkGame`, 캔버스+rAF)으로 재설계: 가상 조이스틱 분사 이동·분사 가스 소진 시 종료·사방 쓰레기+기분 아이템·유명 위성 10종(스타링크 트레인)으로 가스 충전·지구 자전+달. 설정에서 언제나 실행 가능 |
 | v0.5.1 | 우주쓰레기 7종을 이모지→사실적 SVG 아트(`debris.ts`, MLI 금박·태양전지 셀·육각 볼트·페어링 허니콤·EVA 공구가방 등)로 교체. 게임 캔버스(스프라이트)·도감 공용 |
 | v0.5.2 | 위성 연출 개편: 한글 라벨 제거·본체에 영어 약칭, 등장 빈도↓(한 번에 한 종류), 플라이바이(멀리서 천천히→근접 시 빠르게·웅장), 근접 통과/사이드 이탈 혼합·스타링크 트레인은 멀리서 사이드로. 근접 시 화면 흔들림+저음 "웅" 사운드. 분출량 따라 분사 색, 충돌 금지 위험물(가스 감소), 초기 가스 30%↓+`NEXT_PUBLIC_GAS_MAX` env화 |
+| v0.6.0 | 소셜 공유: 설정에 카카오톡·페이스북·X·인스타그램·링크복사 + "카드로 자랑하기"(캔버스로 펫+정화량 이미지 생성→Web Share files). OG/Twitter 메타(`layout.tsx`, metadataBase) + 정적 `public/og.png`(1200×630)로 심리스 링크 프리뷰. 웹 표준(Web Share/Clipboard/OG/표준 intent) 우선, 카카오만 SDK. env `NEXT_PUBLIC_SITE_URL`·`NEXT_PUBLIC_KAKAO_JS_KEY` |
 
 전 플로우를 Chrome 자동화로 실제 플레이하며 검증 완료 (정산 수치, SW 업데이트 사이클 포함).
 
@@ -47,6 +48,9 @@ node scripts/generate-icons.mjs  # PWA 아이콘 재생성 (디자인 변경 시
 - ⚠️ 이 개발 머신에서 **3000 포트는 무관한 다른 프로세스가 점유** 중 → 3001 사용 관례
 - 환경 변수 (`.env.example` 참고, `NEXT_PUBLIC_*`은 빌드 시 인라인됨):
   - `NEXT_PUBLIC_FEED_COOLDOWN_MS` — 육성 단계 우주젤리 쿨다운(ms). 기본 20000
+  - `NEXT_PUBLIC_GAS_MAX` — 우주유영 게임 초기 분사 가스량. 기본 70
+  - `NEXT_PUBLIC_SITE_URL` — 배포 도메인. OG 이미지 절대경로(크롤러 프리뷰)에 사용. 미설정 시 기본값 대체
+  - `NEXT_PUBLIC_KAKAO_JS_KEY` — 카카오톡 공유용 Kakao JS 키. 없으면 네이티브 공유/복사 폴백
   - `NEXT_PUBLIC_APP_VERSION` — **직접 설정 금지.** next.config.ts가 package.json version에서 자동 주입
 
 ## 4. 코드 맵
@@ -60,6 +64,7 @@ src/
     letters.ts      편지 템플릿 풀(밝은 톤 7 + 그리운 톤 4) + 웰컴 편지
     satellites.ts   우주유영 게임 위성 10종 정의 + 캔버스 드로잉(진행축 +x)
     debris.ts       우주쓰레기 7종 사실적 SVG 아트 + data URL (게임 스프라이트·도감 공용)
+    share.ts        소셜 공유(문구·URL·Web Share·FB/X intent·Kakao SDK·자랑 카드 캔버스)
     storage.ts      localStorage 로드/저장 (version 체크)
     notify.ts       재회 로컬 알림 + 알림 설정 저장
     version.ts      APP_VERSION 상수
