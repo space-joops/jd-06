@@ -191,7 +191,7 @@ export function hatched(state: GameState): GameState {
 
 export function nameAndStart(state: GameState, name: string, now: number): GameState {
   if (state.stage !== "name") return state;
-  const trimmed = name.trim().slice(0, 8);
+  const trimmed = name.trim().slice(0, 16);
   return {
     ...state,
     stage: "raising",

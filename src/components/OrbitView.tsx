@@ -6,6 +6,7 @@ interface OrbitViewProps {
   phase: number;
   inWindow: boolean;
   color: PetColor;
+  homeLabel: string;
 }
 
 const CX = 180;
@@ -14,7 +15,7 @@ const EARTH_R = 150;
 const ORBIT_R = 210;
 
 /** 지구 + 궤도 + 펫 위치 시각화. 펫은 상공 부근에서만 보이고 반대편에선 지구 뒤로 숨는다 */
-export default function OrbitView({ phase, inWindow, color }: OrbitViewProps) {
+export default function OrbitView({ phase, inWindow, color, homeLabel }: OrbitViewProps) {
   const c = PET_COLORS[color];
   const a = phase * Math.PI * 2;
   const x = CX + ORBIT_R * Math.sin(a);
@@ -67,7 +68,7 @@ export default function OrbitView({ phase, inWindow, color }: OrbitViewProps) {
           fontSize={11}
           fill="rgba(255,255,255,0.85)"
         >
-          우리 집
+          {homeLabel}
         </text>
       </g>
 

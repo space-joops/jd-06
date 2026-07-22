@@ -29,13 +29,6 @@ export function daysTogether(s: ShareStats): number {
   return Math.max(1, Math.floor((Date.now() - s.createdAt) / 86_400_000));
 }
 
-/** 공유 문구 — 펫 이름·정화량을 담은 자랑 메시지 */
-export function buildShareText(s: ShareStats): string {
-  const name = s.name || "별이";
-  const n = s.debrisTotal.toLocaleString();
-  return `🛰️ 나의 아스트로펫 '${name}'가 우주쓰레기 ${n}개를 정화했어요! 함께 우주를 지켜요 🌍 #아스트로펫`;
-}
-
 /** 공유 URL — 항상 현재 실제 도메인(런타임 origin) */
 export function getShareUrl(): string {
   if (typeof window === "undefined") return "https://jd-06.vercel.app";
@@ -140,20 +133,26 @@ async function loadKakaoSdk(): Promise<KakaoSdk | null> {
   return Kakao;
 }
 
+export interface KakaoShareText {
+  title: string;
+  description: string;
+  buttonTitle: string;
+}
+
 /** 카카오톡 공유. 키가 없거나 실패하면 false(폴백 유도) */
-export async function shareKakao(stats: ShareStats, url: string): Promise<boolean> {
+export async function shareKakao(url: string, text: KakaoShareText): Promise<boolean> {
   try {
     const Kakao = await loadKakaoSdk();
     if (!Kakao) return false;
     Kakao.Share.sendDefault({
       objectType: "feed",
       content: {
-        title: "아스트로펫",
-        description: buildShareText(stats),
+        title: text.title,
+        description: text.description,
         imageUrl: getOgImageUrl(),
         link: { mobileWebUrl: url, webUrl: url },
       },
-      buttons: [{ title: "나도 키우기", link: { mobileWebUrl: url, webUrl: url } }],
+      buttons: [{ title: text.buttonTitle, link: { mobileWebUrl: url, webUrl: url } }],
     });
     return true;
   } catch {
@@ -175,11 +174,31 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
+export interface ShareCardText {
+  /** 상단 펫 이름 */
+  name: string;
+  /** 정화량 (예: "1,234개" / "1,234 pieces" — 로케일별 완성 문구) */
+  count: string;
+  /** 부제 (예: "우주쓰레기 정화 완료") */
+  caption: string;
+  /** 브랜드 워드마크 (예: "🛰️ 아스트로펫") */
+  brand: string;
+}
+
+/** 캔버스용 다국어 폰트 스택 (CJK·아랍 시스템 폰트 폴백 포함) */
+const CARD_FONT =
+  "'Apple SD Gothic Neo','Noto Sans KR','Noto Sans SC','Noto Sans JP'," +
+  "'Noto Sans Arabic','Malgun Gothic','PingFang SC','Hiragino Sans',sans-serif";
+
 /**
  * 공유용 자랑 카드(1080×1080 PNG)를 그린다. 펫은 렌더된 PetSvg의 마크업을 넘겨받아 재사용.
- * 한글은 캔버스 시스템 폰트로 렌더된다. 실패 시 null.
+ * 문자는 캔버스 시스템 폰트(다국어 폴백)로 렌더된다. 실패 시 null.
  */
-export async function renderShareCard(stats: ShareStats, petSvg: string): Promise<File | null> {
+export async function renderShareCard(
+  stats: ShareStats,
+  petSvg: string,
+  card: ShareCardText
+): Promise<File | null> {
   try {
     const S = 1080;
     const canvas = document.createElement("canvas");
@@ -216,21 +235,20 @@ export async function renderShareCard(stats: ShareStats, petSvg: string): Promis
       ctx.drawImage(petImg, (S - ps) / 2, 205, ps, ps);
     }
 
-    // 텍스트
+    // 텍스트 (다국어 폰트 폴백 · 중앙 정렬이라 RTL도 그대로 렌더)
     ctx.textAlign = "center";
-    const kfont = "'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
     ctx.fillStyle = "#ffffff";
-    ctx.font = `700 62px ${kfont}`;
-    ctx.fillText(stats.name || "별이", S / 2, 160);
-    ctx.font = `800 108px ${kfont}`;
+    ctx.font = `700 62px ${CARD_FONT}`;
+    ctx.fillText(card.name, S / 2, 160);
+    ctx.font = `800 108px ${CARD_FONT}`;
     ctx.fillStyle = "#7de8c3";
-    ctx.fillText(`${stats.debrisTotal.toLocaleString()}개`, S / 2, 830);
-    ctx.font = `500 42px ${kfont}`;
+    ctx.fillText(card.count, S / 2, 830);
+    ctx.font = `500 42px ${CARD_FONT}`;
     ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.fillText("우주쓰레기 정화 완료", S / 2, 892);
-    ctx.font = `600 36px ${kfont}`;
+    ctx.fillText(card.caption, S / 2, 892);
+    ctx.font = `600 36px ${CARD_FONT}`;
     ctx.fillStyle = "#ffe9a8";
-    ctx.fillText("🛰️ 아스트로펫", S / 2, 1000);
+    ctx.fillText(card.brand, S / 2, 1000);
 
     const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
     if (!blob) return null;

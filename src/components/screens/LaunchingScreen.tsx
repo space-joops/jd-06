@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import PetSvg from "@/components/PetSvg";
 import type { GameApi } from "@/hooks/useGame";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const STREAKS = Array.from({ length: 9 }, (_, i) => ({
   left: (i * 47 + 13) % 100,
@@ -10,6 +11,7 @@ const STREAKS = Array.from({ length: 9 }, (_, i) => ({
 }));
 
 export default function LaunchingScreen({ api }: { api: GameApi }) {
+  const { t } = useI18n();
   const [count, setCount] = useState(3);
   const apiRef = useRef(api);
   apiRef.current = api;
@@ -52,10 +54,10 @@ export default function LaunchingScreen({ api }: { api: GameApi }) {
 
       <p className="absolute bottom-24 text-center">
         <span className="block font-mono text-6xl font-bold text-star">
-          {count > 0 ? count : "발사!"}
+          {count > 0 ? count : t("launching.liftoff")}
         </span>
         <span className="mt-3 block text-sm text-white/60">
-          {api.state.pet.name}, 우주로 떠나요
+          {t("launching.subtitle", { name: api.state.pet.name })}
         </span>
       </p>
     </div>

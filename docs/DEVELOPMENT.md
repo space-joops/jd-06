@@ -30,6 +30,7 @@
 | v0.5.2 | 위성 연출 개편: 한글 라벨 제거·본체에 영어 약칭, 등장 빈도↓(한 번에 한 종류), 플라이바이(멀리서 천천히→근접 시 빠르게·웅장), 근접 통과/사이드 이탈 혼합·스타링크 트레인은 멀리서 사이드로. 근접 시 화면 흔들림+저음 "웅" 사운드. 분출량 따라 분사 색, 충돌 금지 위험물(가스 감소), 초기 가스 30%↓+`NEXT_PUBLIC_GAS_MAX` env화 |
 | v0.6.0 | 소셜 공유: 설정에 카카오톡·페이스북·X·인스타그램·링크복사 + "카드로 자랑하기"(캔버스로 펫+정화량 이미지 생성→Web Share files). OG/Twitter 메타(`layout.tsx`, metadataBase) + 정적 `public/og.png`(1200×630)로 심리스 링크 프리뷰. 웹 표준(Web Share/Clipboard/OG/표준 intent) 우선, 카카오만 SDK. env `NEXT_PUBLIC_SITE_URL`·`NEXT_PUBLIC_KAKAO_JS_KEY` |
 | v0.7.0 | 반대편 먹방: 재회 윈도우 밖에서 펫이 우주쓰레기를 먹는 애니(`PetEating`, `expression="eating"` + chomp·munch CSS, 도감 SVG 재사용). 쓰다듬기 반응: 탭 시 스퀴시 애니(WAAPI `usePetReaction`) + 진동(Vibration API) — 궤도·육성 공통 |
+| v0.8.0 | 다국어 i18n 10종(한국어·English·العربية RTL·中文·日本語·Español·Français·Deutsch·Português·Русский). 브라우저 언어 자동 감지 + 설정에서 전환(`localStorage` 저장). UI 전체 + 편지·도감 설명까지 전체 번역. 경량 커스텀 i18n(`src/i18n/*`, `t(key,params)`·`Intl` 숫자/날짜), 아랍어 `dir=rtl`, CJK/아랍 시스템 폰트 폴백 |
 
 전 플로우를 Chrome 자동화로 실제 플레이하며 검증 완료 (정산 수치, SW 업데이트 사이클 포함).
 
@@ -69,6 +70,10 @@ src/
     storage.ts      localStorage 로드/저장 (version 체크)
     notify.ts       재회 로컬 알림 + 알림 설정 저장
     version.ts      APP_VERSION 상수
+  i18n/           ← 다국어 (경량 커스텀, v0.8.0)
+    config.ts       지원 언어 10종(코드·네이티브명·dir)·DEFAULT_LOCALE(en)·detectLocale()
+    I18nProvider.tsx  Context — 감지·t(key,params)·formatNumber/Date·lang/dir 갱신·setLocale 저장
+    messages/       언어별 카탈로그(ko.ts가 구조 원본, type Messages = typeof ko), index.ts
   hooks/
     useGame.ts      게임 상태 훅 — 1초 틱, 오프라인 정산, 자동 저장, 액션 API
     usePwa.ts       SW 등록/업데이트 감지, 설치 프롬프트, 알림 권한
@@ -82,9 +87,10 @@ src/
     PetEating.tsx   반대편 먹방 애니 (펫 eating 표정 + 파편이 입으로, CSS만)
     EggSvg.tsx / Stars.tsx / Gauge.tsx / Hearts.tsx / InstallToast.tsx
     screens/        Adopt → Egg → Name → Raising → Prep → Launching → Orbit
-    panels/         Sheet(바텀시트 셸), LettersPanel, DebrisPanel, SettingsPanel, SettleModal
+    panels/         Sheet(바텀시트 셸), LettersPanel, DebrisPanel, SettingsPanel,
+                    SettleModal, SharePanel, LanguagePanel(설정 언어 전환 섹션)
   app/
-    layout.tsx      메타데이터(lang=ko, appleWebApp), 뷰포트
+    layout.tsx      메타데이터(기본 로케일 en, appleWebApp), 뷰포트
     manifest.ts     PWA manifest (Next 메타데이터 라우트)
 public/
   sw.js           서비스워커 (아래 6장 참고)
@@ -183,6 +189,32 @@ localStorage 키:
 - `OrbitView` 좌표계: viewBox 360×240, 지구 중심 (180,330) r150, 궤도 r210.
   펫 위치 `x = 180 + 210sin(2πp)`, `y = 330 − 210cos(2πp)` (p=phase, 0=상공).
   `y < 252`일 때만 보임 → 상공 부근에서만 나타나고 반대편에선 지구 뒤로 숨는 연출.
+
+### 5.7 다국어 (i18n, v0.8.0)
+
+- **경량 커스텀** — next-intl/i18next 없이 React Context 하나(`I18nProvider`). PWA·localStorage
+  싱글플레이 모델을 유지하려 서버 라우팅(`/[locale]`)을 도입하지 않음. 전 UI가 `"use client"`라 가능.
+- **감지 순서**(`detectLocale`): localStorage `astropet-locale` → `navigator.languages` 기본
+  서브태그(`ko-KR`→`ko`) 매칭 → `DEFAULT_LOCALE`(en). SSR 하이드레이션 불일치 방지를 위해 provider
+  state는 en으로 초기화 후 `useEffect`에서 감지값으로 교체(`document.documentElement.lang/dir`도 갱신).
+- **카탈로그 타입 안전** — `messages/ko.ts`가 구조 원본이고 `export type Messages = typeof ko`.
+  나머지 9개 언어 파일은 `const xx: Messages = {...}`라 **키가 하나라도 빠지면 빌드가 실패**(전 언어 동형 보장).
+  값은 전부 문자열 리프(복수형은 문구로 흡수) + `pet.namePresets`만 `string[]`.
+- **`t(key, params)`** — 점경로 조회(현재 로케일 → en → ko 폴백) + `{var}` 치환. `tlist`는 배열 반환.
+  숫자·날짜는 `formatNumber`/`formatDate`(=`Intl.NumberFormat`/`DateTimeFormat(locale)`).
+- **아랍어 RTL** — provider가 `<html dir>` 설정. 방향성 요소는 논리 클래스(`ms-`/`me-`/`text-start`)와
+  `rtl:` 변형으로 보정(설정 토글 노브 등). **캔버스 게임 월드·`OrbitView`는 공간 게임이라 미러링하지 않고
+  HUD 텍스트만 번역**.
+- **편지 저장** — `Letter.tkey`(예: `letter.happy.earth`)만 저장하고 렌더 시 현재 언어로 번역
+  (`letters.ts`가 `{key,icon}` 풀 보유). 레거시 세이브의 `title/body`는 폴백으로 그대로 표시 —
+  **마이그레이션·버전업 불필요**(추가 필드).
+- **문자열 소유** — 도감 name/desc·희귀도·색 라벨·기본 펫 이름 등 데이터 문자열도 카탈로그에 있고
+  컴포넌트가 id로 `t(\`debris.${id}.name\`)`처럼 조회. `share.ts`·`notify.ts`처럼 컴포넌트가 아닌
+  로직은 번역된 문자열을 **인자로 주입**받는다(내부에 한국어 없음).
+- **폰트** — 웹폰트 번들 없이 `globals.css` body 스택 + 공유 카드 캔버스(`share.ts` `CARD_FONT`)에
+  CJK/아랍 **시스템 폰트 폴백**(Noto Sans SC/JP/Arabic 등). 기기에 없으면 대체 렌더.
+- **한계** — 서버 메타데이터(`layout.tsx`)·`manifest.ts`·정적 `og.png`는 요청별 로케일 전환이 어려워
+  기본 로케일(en) 1개로 고정. 번역은 초안 수준, 원어민 감수는 후속.
 
 ## 6. PWA 구조
 
@@ -298,3 +330,6 @@ localStorage.setItem(k, JSON.stringify(s)); location.reload();
 - dev 모드에선 SW 미등록이라 PWA 기능은 prod 빌드로만 확인 가능
 - 편지 생성에 `Math.random` 사용 — 서버 이전 시 시드/결정성 고려
 - 육성 단계에서는 기분이 0까지 떨어져도 페널티 없음 (의도), 궤도에서만 수거 효율에 반영
+- **i18n**: 서버 메타데이터·`manifest.ts`·`og.png`는 기본 로케일(en) 고정(요청별 로케일 미지원).
+  번역은 초안(원어민 감수 후속). RTL은 UI/텍스트 기준 — 캔버스 게임 월드·궤도 뷰는 미러링 안 함.
+  CJK/아랍은 시스템 폰트 폴백(웹폰트 미번들)이라 기기 폰트 유무에 따라 렌더가 달라질 수 있음

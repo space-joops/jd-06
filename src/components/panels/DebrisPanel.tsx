@@ -1,6 +1,7 @@
 "use client";
 
-import { DEBRIS_DEFS, RARITY_COLOR, RARITY_LABEL } from "@/lib/constants";
+import { useI18n } from "@/i18n/I18nProvider";
+import { DEBRIS_DEFS, RARITY_COLOR } from "@/lib/constants";
 import { DEBRIS_DATAURL } from "@/lib/debris";
 import type { DebrisId } from "@/lib/types";
 
@@ -11,16 +12,17 @@ export default function DebrisPanel({
   debris: Record<DebrisId, number>;
   total: number;
 }) {
+  const { t, formatNumber } = useI18n();
   return (
     <div>
       <div className="mb-4 rounded-2xl bg-white/5 px-4 py-3 text-center">
         <p className="text-2xl font-bold tabular-nums">
-          {total.toLocaleString()}
-          <span className="ml-1 text-sm font-normal text-white/60">개 수거</span>
+          {formatNumber(total)}
+          <span className="ms-1 text-sm font-normal text-white/60">
+            {t("debrisPanel.collectedSuffix")}
+          </span>
         </p>
-        <p className="mt-1 text-xs text-white/55">
-          그만큼 지구 궤도가 깨끗해졌어요 🌍
-        </p>
+        <p className="mt-1 text-xs text-white/55">{t("debrisPanel.cleanNote")}</p>
       </div>
 
       <ul className="flex flex-col gap-2">
@@ -37,7 +39,7 @@ export default function DebrisPanel({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={DEBRIS_DATAURL[d.id]}
-                alt={d.name}
+                alt={found ? t(`debris.${d.id}.name`) : ""}
                 className={`h-10 w-10 shrink-0 object-contain ${
                   found ? "" : "opacity-25 grayscale"
                 }`}
@@ -45,17 +47,17 @@ export default function DebrisPanel({
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">
-                    {found ? d.name : "???"}
+                    {found ? t(`debris.${d.id}.name`) : t("debrisPanel.unknownName")}
                   </span>
                   <span
                     className="rounded-full px-1.5 py-px text-[10px] font-bold text-space-900"
                     style={{ background: RARITY_COLOR[d.rarity] }}
                   >
-                    {RARITY_LABEL[d.rarity]}
+                    {t(`rarity.${d.rarity}`)}
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs leading-snug text-white/55">
-                  {found ? d.desc : "아직 발견하지 못했어요."}
+                  {found ? t(`debris.${d.id}.desc`) : t("debrisPanel.unknownDesc")}
                 </p>
               </div>
               <span className="shrink-0 text-sm tabular-nums text-white/80">

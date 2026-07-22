@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
+  // 매니페스트는 요청별 로케일 전환이 어려워 기본 로케일(en) 1개로 유지한다.
   return {
-    name: "아스트로펫",
-    short_name: "아스트로펫",
-    description: "우주쓰레기를 먹는 나의 펫과 교감하는 힐링 게임",
+    name: "Astropet",
+    short_name: "Astropet",
+    description: "A cozy game where you bond with a pet that feeds on space debris.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

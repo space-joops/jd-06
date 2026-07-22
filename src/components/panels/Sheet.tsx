@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/I18nProvider";
+
 export default function Sheet({
   title,
   onClose,
@@ -9,12 +11,13 @@ export default function Sheet({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="absolute inset-0 z-30">
       <button
         className="absolute inset-0 bg-black/60"
         onClick={onClose}
-        aria-label="닫기"
+        aria-label={t("common.close")}
       />
       <div className="anim-slideup absolute inset-x-0 bottom-0 max-h-[78%] overflow-y-auto rounded-t-3xl bg-space-700 p-5 pb-8">
         <div className="mb-4 flex items-center justify-between">
@@ -23,7 +26,7 @@ export default function Sheet({
             onClick={onClose}
             className="rounded-full bg-white/10 px-3.5 py-1.5 text-sm text-white/80 transition active:scale-95"
           >
-            닫기
+            {t("common.close")}
           </button>
         </div>
         {children}

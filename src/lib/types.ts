@@ -34,10 +34,13 @@ export interface DebrisDef {
 export interface Letter {
   id: string;
   at: number;
-  title: string;
-  body: string;
   icon: string;
   read: boolean;
+  /** i18n 템플릿 키(예: "letter.happy.earth"). 렌더 시 현재 언어로 번역 */
+  tkey?: string;
+  /** 레거시(구 세이브) — tkey 없는 편지의 원문 폴백 */
+  title?: string;
+  body?: string;
 }
 
 export interface GameState {

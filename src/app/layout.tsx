@@ -13,15 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://jd-06.vercel.app";
-const TITLE = "아스트로펫";
-const DESCRIPTION = "우주쓰레기를 먹는 나의 펫과 교감하는 힐링 게임";
+// 정적 메타데이터는 기본 로케일(en) 1개로 유지 — UI 문자열은 런타임에 자동 감지/전환된다.
+const TITLE = "Astropet";
+const DESCRIPTION =
+  "A cozy game where you bond with a pet that feeds on space debris.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
   applicationName: TITLE,
-  keywords: ["아스트로펫", "우주펫", "힐링게임", "우주쓰레기", "PWA"],
+  keywords: ["Astropet", "space pet", "cozy game", "space debris", "PWA"],
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -33,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: TITLE,
-    locale: "ko_KR",
+    locale: "en_US",
     url: SITE_URL,
     title: TITLE,
     description: DESCRIPTION,
@@ -42,7 +44,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "아스트로펫 — 우주쓰레기를 정화하는 나의 우주펫",
+        alt: "Astropet — bond with a pet that cleans up space debris",
       },
     ],
   },
@@ -68,7 +70,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    // 기본 로케일(en) — I18nProvider가 런타임에 감지된 언어로 lang/dir을 갱신한다.
+    <html lang="en" dir="ltr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

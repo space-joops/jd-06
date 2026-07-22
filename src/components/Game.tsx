@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useGame, type GameApi } from "@/hooks/useGame";
 import { usePwa, type PwaApi } from "@/hooks/usePwa";
+import { I18nProvider, useI18n } from "@/i18n/I18nProvider";
 import { orbitInfo } from "@/lib/game";
 import { notifyApproach } from "@/lib/notify";
 import { APP_VERSION } from "@/lib/version";
@@ -18,8 +19,17 @@ import PrepScreen from "./screens/PrepScreen";
 import RaisingScreen from "./screens/RaisingScreen";
 
 export default function Game() {
+  return (
+    <I18nProvider>
+      <GameInner />
+    </I18nProvider>
+  );
+}
+
+function GameInner() {
   const api = useGame();
   const pwa = usePwa();
+  const { t } = useI18n();
 
   // 재회 윈도우가 열리는 순간 로컬 알림 (탭이 백그라운드일 때만)
   const prevInWindow = useRef(false);
@@ -29,7 +39,12 @@ export default function Game() {
       return;
     }
     const inWin = orbitInfo(api.state.launchedAt, api.now).inWindow;
-    if (inWin && !prevInWindow.current) void notifyApproach(api.state.pet.name);
+    if (inWin && !prevInWindow.current) {
+      void notifyApproach(
+        t("notify.approachTitle", { name: api.state.pet.name }),
+        t("notify.approachBody")
+      );
+    }
     prevInWindow.current = inWin;
   });
 
@@ -48,13 +63,13 @@ export default function Game() {
         {pwa.updateReady && (
           <div className="anim-fadeup absolute inset-x-4 bottom-4 z-50 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 text-space-900 shadow-lg">
             <span className="flex-1 text-sm font-semibold">
-              새 버전이 준비됐어요 ✨
+              {t("update.banner")}
             </span>
             <button
               onClick={pwa.applyUpdate}
               className="rounded-xl bg-space-700 px-3.5 py-2 text-sm font-bold text-white transition active:scale-95"
             >
-              업데이트
+              {t("update.cta")}
             </button>
           </div>
         )}
@@ -88,10 +103,11 @@ function Screens({ api, pwa }: { api: GameApi; pwa: PwaApi }) {
 }
 
 function Splash() {
+  const { t } = useI18n();
   return (
     <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3">
       <span className="anim-twinkle text-4xl">✨</span>
-      <h1 className="text-xl font-bold tracking-widest">아스트로펫</h1>
+      <h1 className="text-xl font-bold tracking-widest">{t("splash.title")}</h1>
     </div>
   );
 }
