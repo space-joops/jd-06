@@ -1,6 +1,7 @@
 "use client";
 
 import { DEBRIS_DEFS, RARITY_COLOR, RARITY_LABEL } from "@/lib/constants";
+import { DEBRIS_DATAURL } from "@/lib/debris";
 import type { DebrisId } from "@/lib/types";
 
 export default function DebrisPanel({
@@ -33,9 +34,14 @@ export default function DebrisPanel({
                 found ? "" : "opacity-45"
               }`}
             >
-              <span className={`text-2xl ${found ? "" : "grayscale"}`}>
-                {d.icon}
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={DEBRIS_DATAURL[d.id]}
+                alt={d.name}
+                className={`h-10 w-10 shrink-0 object-contain ${
+                  found ? "" : "opacity-25 grayscale"
+                }`}
+              />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">

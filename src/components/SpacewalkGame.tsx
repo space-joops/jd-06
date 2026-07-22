@@ -20,6 +20,7 @@ import {
   STARLINK_TRAIN,
   THRUST_ACCEL,
 } from "@/lib/constants";
+import { DEBRIS_DATAURL } from "@/lib/debris";
 import { rollDebris } from "@/lib/game";
 import { drawSatellite, SAT_DEFS, STARLINK_DEF, type SatelliteDef } from "@/lib/satellites";
 import type { DebrisId, PetColor, SuitColor } from "@/lib/types";
@@ -98,8 +99,24 @@ export default function SpacewalkGame({
   const overRef = useRef(false);
   const collectedRef = useRef<DebrisId[]>([]);
   const moodGainRef = useRef(0);
+  const spritesRef = useRef<Partial<Record<DebrisId, CanvasImageSource>>>({});
 
   useEffect(() => setMounted(true), []);
+
+  // 우주쓰레기 SVG를 오프스크린 캔버스 스프라이트로 미리 래스터화 (매 프레임 blit)
+  useEffect(() => {
+    (Object.keys(DEBRIS_DATAURL) as DebrisId[]).forEach((id) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = 64;
+        c.height = 64;
+        c.getContext("2d")?.drawImage(img, 0, 0, 64, 64);
+        spritesRef.current[id] = c;
+      };
+      img.src = DEBRIS_DATAURL[id];
+    });
+  }, []);
 
   // onExit 최신 참조 유지
   const onExitRef = useRef(onExit);
@@ -397,7 +414,7 @@ export default function SpacewalkGame({
         debris,
         parts,
         joy,
-        petGassed: sats.some((s) => s.gassed),
+        sprites: spritesRef.current,
       });
 
       // 펫 DOM 갱신
@@ -533,7 +550,7 @@ function draw(
     debris: Debris[];
     parts: Particle[];
     joy: { active: boolean; ox: number; oy: number; kx: number; ky: number };
-    petGassed: boolean;
+    sprites: Partial<Record<DebrisId, CanvasImageSource>>;
   }
 ) {
   ctx.clearRect(0, 0, W, H);
@@ -637,19 +654,25 @@ function draw(
   }
   ctx.globalAlpha = 1;
 
-  // 쓰레기 (이모지)
+  // 쓰레기 (사실적 SVG 스프라이트) / 기분 아이템 (이모지)
   for (const d of s.debris) {
     ctx.save();
     ctx.translate(d.x, d.y);
     ctx.rotate(d.rot);
-    ctx.font = "26px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    if (!d.id) {
+    const spr = d.id ? s.sprites[d.id] : undefined;
+    if (spr) {
+      const sz = d.r * 2.7;
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 5;
+      ctx.drawImage(spr, -sz / 2, -sz / 2, sz, sz);
+    } else {
+      ctx.font = "26px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.shadowColor = "rgba(249,168,212,0.9)";
       ctx.shadowBlur = 10;
+      ctx.fillText(d.icon, 0, 0);
     }
-    ctx.fillText(d.icon, 0, 0);
     ctx.restore();
   }
 
