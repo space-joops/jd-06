@@ -62,6 +62,15 @@
 - 공유 로직은 `src/lib/share.ts`, UI는 `src/components/panels/SharePanel.tsx`.
 - env: `NEXT_PUBLIC_SITE_URL`(OG 절대경로), `NEXT_PUBLIC_KAKAO_JS_KEY`(카카오).
 
+# 다국어 (i18n, v0.8.0)
+- **10개 언어 지원**: 한국어(원문)·English(폴백)·العربية(**RTL**)·中文·日本語·Español·Français·Deutsch·Português·Русский. UI 전체 + 긴 편지·도감 설명까지 **전체 번역**.
+- **자동 감지 + 설정 전환**: `navigator.languages` 기본 서브태그로 자동 선택(미지원 언어는 en 폴백). 설정 최상단 "언어 / Language 🌐" 섹션에서 네이티브 표기 목록으로 즉시 변경, `localStorage`(`astropet-locale`)에 저장·재로드 유지.
+- **경량 커스텀 i18n**(무거운 dep 없이 PWA·localStorage 모델 유지): `src/i18n/config.ts`(지원 언어·감지), `messages/{code}.ts`(카탈로그, `ko.ts`가 구조 원본 `type Messages = typeof ko`), `I18nProvider.tsx`(감지·`t(key,params)`·`formatNumber`/`formatDate`·`document.documentElement.lang/dir` 갱신). `Game.tsx`가 `<I18nProvider>`로 감싼다.
+- **아랍어 RTL**: provider가 `dir` 설정, 논리 클래스(`ms-`/`me-`/`text-start`)와 `rtl:` 변형으로 방향 보정. **캔버스 게임 월드·궤도 시각화는 미러링하지 않음**(공간 게임; HUD 텍스트만 번역).
+- **편지 i18n**: `Letter.tkey`(템플릿 키)를 저장 → 렌더 시 현재 언어로 번역. 레거시 세이브는 `title/body` 폴백(마이그레이션 불필요).
+- **폰트**: `globals.css`·공유 카드 캔버스에 CJK/아랍 시스템 폰트 폴백(웹폰트 미번들).
+- **한계**: 서버 메타데이터(`layout.tsx`)·PWA `manifest.ts`·`og.png`는 요청별 로케일 전환이 어려워 **기본 로케일(en) 1개**로 고정. 번역은 초안 수준으로 원어민 감수는 후속 과제.
+
 # 코드 구조 (Phase 1)
 - `src/lib/` — 순수 게임 로직 (types, constants 튜닝 수치, game.ts 정산/궤도/액션, letters.ts 편지 템플릿, storage.ts)
 - `src/hooks/useGame.ts` — 1초 틱, 오프라인 정산, 자동 저장

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import type { PwaApi } from "@/hooks/usePwa";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const SNOOZE_KEY = "astropet-install-snooze-v1";
 const SNOOZE_MS = 24 * 3600 * 1000;
 
 /** 앱이 설치되어 있지 않으면 잠시 후 설치/안내 토스트를 띄운다 (닫으면 24시간 숨김) */
 export default function InstallToast({ pwa }: { pwa: PwaApi }) {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -38,10 +40,10 @@ export default function InstallToast({ pwa }: { pwa: PwaApi }) {
 
   const message =
     pwa.installState === "installable"
-      ? "앱으로 설치하면 홈 화면에서 바로 펫을 만날 수 있어요!"
+      ? t("installToast.installable")
       : pwa.installState === "ios-guide"
-        ? "Safari 공유 버튼 → “홈 화면에 추가”로 앱처럼 설치할 수 있어요."
-        : "브라우저 메뉴의 “설치” 또는 “홈 화면에 추가”로 앱처럼 쓸 수 있어요.";
+        ? t("installToast.iosGuide")
+        : t("installToast.genericGuide");
 
   return (
     <div className="anim-fadeup absolute inset-x-4 top-4 z-40 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 text-space-900 shadow-lg">
@@ -56,15 +58,15 @@ export default function InstallToast({ pwa }: { pwa: PwaApi }) {
           }}
           className="shrink-0 rounded-xl bg-space-700 px-3 py-2 text-xs font-bold text-white transition active:scale-95"
         >
-          설치
+          {t("installToast.install")}
         </button>
       )}
       <button
         onClick={dismiss}
-        aria-label="설치 안내 닫기"
+        aria-label={t("installToast.ariaDismiss")}
         className="shrink-0 rounded-full bg-space-900/10 px-2.5 py-1.5 text-xs font-semibold transition active:scale-95"
       >
-        나중에
+        {t("installToast.later")}
       </button>
     </div>
   );

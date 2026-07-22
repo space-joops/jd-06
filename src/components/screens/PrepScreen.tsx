@@ -3,22 +3,22 @@
 import { useState } from "react";
 import PetSvg from "@/components/PetSvg";
 import type { GameApi } from "@/hooks/useGame";
+import { useI18n } from "@/i18n/I18nProvider";
 import { SUIT_COLORS } from "@/lib/constants";
 import type { SuitColor } from "@/lib/types";
 
 const SUITS: SuitColor[] = ["coral", "sky", "gold"];
 
 export default function PrepScreen({ api }: { api: GameApi }) {
+  const { t } = useI18n();
   const [suit, setSuit] = useState<SuitColor>("coral");
 
   return (
     <div className="anim-fadeup relative z-10 flex h-full flex-col items-center px-6 pb-8 pt-12">
-      <p className="text-xs tracking-[0.3em] text-white/50">MISSION READY</p>
-      <h1 className="mt-2 text-xl font-bold">수거 슈트를 입혀주세요</h1>
-      <p className="mt-2 text-center text-sm text-white/60">
-        우주쓰레기 수거 임무를 위한 특수 슈트예요.
-        <br />
-        {api.state.pet.name}에게 어울리는 색을 골라주세요.
+      <p className="text-xs tracking-[0.3em] text-white/50">{t("prep.tagline")}</p>
+      <h1 className="mt-2 text-xl font-bold">{t("prep.title")}</h1>
+      <p className="mt-2 whitespace-pre-line text-center text-sm text-white/60">
+        {t("prep.desc", { name: api.state.pet.name })}
       </p>
 
       <PetSvg
@@ -41,7 +41,7 @@ export default function PrepScreen({ api }: { api: GameApi }) {
               className="h-8 w-8 rounded-full border-2 border-white/40"
               style={{ background: SUIT_COLORS[s].base }}
             />
-            <span className="text-xs text-white/80">{SUIT_COLORS[s].label}</span>
+            <span className="text-xs text-white/80">{t(`color.suit.${s}`)}</span>
           </button>
         ))}
       </div>
@@ -52,7 +52,7 @@ export default function PrepScreen({ api }: { api: GameApi }) {
         onClick={() => api.launchWithSuit(suit)}
         className="w-full rounded-2xl bg-mint py-4 text-lg font-bold text-space-900 transition active:scale-95"
       >
-        발사 준비 완료 🚀
+        {t("prep.cta")}
       </button>
     </div>
   );

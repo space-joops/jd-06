@@ -22,6 +22,7 @@ import {
   STARLINK_TRAIN,
   THRUST_ACCEL,
 } from "@/lib/constants";
+import { useI18n } from "@/i18n/I18nProvider";
 import { DEBRIS_DATAURL } from "@/lib/debris";
 import { rollDebris } from "@/lib/game";
 import { drawSatellite, SAT_DEFS, STARLINK_DEF, type SatelliteDef } from "@/lib/satellites";
@@ -111,6 +112,7 @@ export default function SpacewalkGame({
   suit: SuitColor | null;
   onExit: (result: CollectResult) => void;
 }) {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [summary, setSummary] = useState<{ count: number; kg: number; mood: number } | null>(null);
 
@@ -645,14 +647,14 @@ export default function SpacewalkGame({
             <button
               onClick={exit}
               onPointerDown={(e) => e.stopPropagation()}
-              aria-label="닫기"
+              aria-label={t("spacewalk.ariaClose")}
               className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-lg text-white/85 transition active:scale-90"
             >
               ✕
             </button>
             <div className="flex-1">
               <div className="flex items-center gap-1.5 text-[11px] font-semibold text-white/80">
-                <span>🔥 분사 가스</span>
+                <span>{t("spacewalk.hudGas")}</span>
                 <span ref={gasNumRef} className="tabular-nums text-star">
                   {GAS_MAX}
                 </span>
@@ -672,7 +674,7 @@ export default function SpacewalkGame({
               <p className="text-sm font-bold tabular-nums text-white">
                 🗑️ <span ref={countRef}>0</span>
               </p>
-              <p className="text-[10px] text-white/55">수거</p>
+              <p className="text-[10px] text-white/55">{t("spacewalk.hudCollected")}</p>
             </div>
           </div>
         </div>
@@ -680,7 +682,7 @@ export default function SpacewalkGame({
         {/* 하단 안내 */}
         {!summary && (
           <p className="pointer-events-none absolute inset-x-0 bottom-6 z-30 text-center text-xs text-white/70">
-            화면을 끌어 유영 · 위성과 만나면 가스 충전 · 붉은 파편은 피해요 ☄️
+            {t("spacewalk.hint")}
           </p>
         )}
 
@@ -689,23 +691,17 @@ export default function SpacewalkGame({
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-space-900/70 px-8">
             <div className="anim-pop w-full max-w-[300px] rounded-3xl bg-space-700 p-6 text-center">
               <p className="text-3xl">🧑‍🚀</p>
-              <p className="mt-2 text-lg font-bold">유영 종료!</p>
-              <p className="mt-1 text-xs text-white/60">분사 가스를 다 썼어요</p>
+              <p className="mt-2 text-lg font-bold">{t("spacewalk.overTitle")}</p>
+              <p className="mt-1 text-xs text-white/60">{t("spacewalk.overSubtitle")}</p>
               <div className="mt-4 space-y-1 text-sm">
-                <p>
-                  🗑️ 우주쓰레기 <b className="text-mint">{summary.count}</b>개 · {summary.kg}kg
-                </p>
-                {summary.mood > 0 && (
-                  <p>
-                    💖 기분 <b className="text-mint">+{summary.mood}</b>
-                  </p>
-                )}
+                <p>{t("spacewalk.overDebris", { count: summary.count, kg: summary.kg })}</p>
+                {summary.mood > 0 && <p>{t("spacewalk.overMood", { mood: summary.mood })}</p>}
               </div>
               <button
                 onClick={exit}
                 className="mt-5 w-full rounded-xl bg-mint py-3 text-sm font-bold text-space-900 transition active:scale-95"
               >
-                도감에 담기
+                {t("spacewalk.overCta")}
               </button>
             </div>
           </div>

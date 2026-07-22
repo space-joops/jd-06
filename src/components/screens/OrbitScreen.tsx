@@ -14,6 +14,7 @@ import Sheet from "@/components/panels/Sheet";
 import type { GameApi } from "@/hooks/useGame";
 import { usePetReaction } from "@/hooks/usePetReaction";
 import type { PwaApi } from "@/hooks/usePwa";
+import { useI18n } from "@/i18n/I18nProvider";
 import { DEBRIS_DEFS, ORBIT_MS, REUNION_WINDOW_RATIO } from "@/lib/constants";
 import { currentMood, formatMMSS, getExpression, orbitInfo } from "@/lib/game";
 import type { DebrisId } from "@/lib/types";
@@ -21,6 +22,7 @@ import type { DebrisId } from "@/lib/types";
 type PanelKind = "letters" | "debris" | "settings" | null;
 
 export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi }) {
+  const { t, formatNumber } = useI18n();
   const { state, now } = api;
   const orbit = orbitInfo(state.launchedAt ?? now, now);
   const mood = currentMood(state, now);
@@ -55,7 +57,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
   const onSnack = () => {
     if (api.doSnack()) {
       spawn(80 + Math.random() * 40, 40, "🍬");
-      showToast("간식 냠냠! 기분이 확 좋아졌어요 💗");
+      showToast(t("orbit.toastSnack"));
     }
   };
 
@@ -80,8 +82,8 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
     if (result.moodGain > 0) parts.push(`💖+${Math.round(result.moodGain)}`);
     showToast(
       got.length > 0
-        ? `수거 완료! ${parts.join(" · ")}`
-        : `기분이 좋아졌어요 💖+${Math.round(result.moodGain)}`
+        ? t("orbit.toastCollected", { items: parts.join(" · ") })
+        : t("orbit.toastMoodOnly", { n: Math.round(result.moodGain) })
     );
   };
 
@@ -93,15 +95,15 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold">{state.pet.name}</span>
             <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] text-white/70">
-              {orbit.index + 1}번째 궤도
+              {t("orbit.badge", { n: orbit.index + 1 })}
             </span>
           </div>
           <span className="text-sm tabular-nums text-white/85">
-            🗑️ {state.debrisTotal.toLocaleString()}개
+            {t("orbit.debrisTotal", { n: formatNumber(state.debrisTotal) })}
           </span>
         </div>
         <div className="mt-2.5">
-          <Gauge label="기분" value={mood} color={moodColor(mood)} />
+          <Gauge label={t("gauge.mood")} value={mood} color={moodColor(mood)} />
         </div>
       </header>
 
@@ -110,6 +112,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
         phase={orbit.phase}
         inWindow={orbit.inWindow}
         color={state.pet.color}
+        homeLabel={t("orbitView.home")}
       />
 
       {/* 상태 / 상호작용 존 */}
@@ -117,7 +120,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
         {orbit.inWindow ? (
           <>
             <p className="font-semibold text-mint">
-              💫 {state.pet.name}가 상공을 지나고 있어요!
+              {t("orbit.overhead", { name: state.pet.name })}
             </p>
             <div
               className="relative -mt-1 w-40 cursor-pointer touch-none"
@@ -143,7 +146,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
               />
             </div>
             <p className="mt-1 text-[11px] text-white/50">
-              탭해서 쓰다듬어 주세요 · {formatMMSS(orbit.windowRemainMs)} 남음
+              {t("orbit.windowHint", { time: formatMMSS(orbit.windowRemainMs) })}
             </p>
             <div className="mt-3 flex w-full gap-2.5">
               <button
@@ -151,14 +154,14 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
                 disabled={snackUsed}
                 className="flex-1 rounded-xl bg-white/10 py-3 text-sm font-semibold transition active:scale-95 disabled:opacity-35"
               >
-                {snackUsed ? "간식 완료 ✔" : "간식 주기 🍬"}
+                {snackUsed ? t("orbit.snackUsed") : t("orbit.snackGive")}
               </button>
               <button
                 onClick={openCoop}
                 disabled={coopUsed}
                 className="flex-1 rounded-xl bg-mint py-3 text-sm font-bold text-space-900 transition active:scale-95 disabled:opacity-35"
               >
-                {coopUsed ? "수거 완료 ✔" : "함께 수거하기 🧑‍🚀"}
+                {coopUsed ? t("orbit.coopUsed") : t("orbit.coopStart")}
               </button>
             </div>
           </>
@@ -167,10 +170,10 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
             <PetEating color={state.pet.color} suit={state.pet.suit} />
             <p className="-mt-1 text-center text-sm text-white/75">
               {farSide
-                ? `${state.pet.name}가 지구 반대편에서 열심히 쓰레기를 먹고 있어요! 🍽️`
-                : `${state.pet.name}가 우리 집 쪽으로 다가오며 수거 중이에요 ✨`}
+                ? t("orbit.farSide", { name: state.pet.name })
+                : t("orbit.nearSide", { name: state.pet.name })}
             </p>
-            <p className="mt-3 text-xs text-white/45">다음 재회까지</p>
+            <p className="mt-3 text-xs text-white/45">{t("orbit.nextReunion")}</p>
             <p className="mt-0.5 font-mono text-4xl font-bold tabular-nums">
               {formatMMSS(orbit.nextWindowInMs)}
             </p>
@@ -189,17 +192,17 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
       <nav className="flex justify-around px-8 pb-7 pt-1">
         <NavButton
           icon="💌"
-          label="편지함"
+          label={t("nav.letters")}
           badge={unread}
           onClick={() => setPanel("letters")}
         />
-        <NavButton icon="📒" label="도감" onClick={() => setPanel("debris")} />
-        <NavButton icon="⚙️" label="설정" onClick={() => setPanel("settings")} />
+        <NavButton icon="📒" label={t("nav.debris")} onClick={() => setPanel("debris")} />
+        <NavButton icon="⚙️" label={t("nav.settings")} onClick={() => setPanel("settings")} />
       </nav>
 
       {/* 패널 */}
       {panel === "letters" && (
-        <Sheet title="우주에서 온 편지" onClose={() => setPanel(null)}>
+        <Sheet title={t("sheet.lettersTitle")} onClose={() => setPanel(null)}>
           <LettersPanel
             letters={state.letters}
             petName={state.pet.name}
@@ -208,12 +211,12 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
         </Sheet>
       )}
       {panel === "debris" && (
-        <Sheet title="우주쓰레기 도감" onClose={() => setPanel(null)}>
+        <Sheet title={t("sheet.debrisTitle")} onClose={() => setPanel(null)}>
           <DebrisPanel debris={state.debris} total={state.debrisTotal} />
         </Sheet>
       )}
       {panel === "settings" && (
-        <Sheet title="설정" onClose={() => setPanel(null)}>
+        <Sheet title={t("sheet.settingsTitle")} onClose={() => setPanel(null)}>
           <SettingsPanel
             pwa={pwa}
             onReset={api.reset}

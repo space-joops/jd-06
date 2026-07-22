@@ -28,10 +28,16 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
+  /* 다국어 시스템 폰트 폴백 (한글·CJK·아랍) — 웹폰트 미번들 */
   font-family:
     var(--font-geist-sans),
     "Apple SD Gothic Neo",
     "Noto Sans KR",
+    "Noto Sans SC",
+    "Noto Sans JP",
+    "Noto Sans Arabic",
+    "PingFang SC",
+    "Hiragino Sans",
     "Malgun Gothic",
     sans-serif;
   user-select: none;

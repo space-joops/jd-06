@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import PetSvg from "@/components/PetSvg";
+import { useI18n } from "@/i18n/I18nProvider";
 import {
-  buildShareText,
   canWebShare,
   copyLink,
   downloadFile,
@@ -17,6 +17,7 @@ import {
 } from "@/lib/share";
 
 export default function SharePanel({ stats }: { stats: ShareStats }) {
+  const { t, formatNumber } = useI18n();
   const [msg, setMsg] = useState<string | null>(null);
   const [webShare, setWebShare] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -37,18 +38,25 @@ export default function SharePanel({ stats }: { stats: ShareStats }) {
     msgTimer.current = setTimeout(() => setMsg(null), 2800);
   };
 
-  const text = () => buildShareText(stats);
+  const name = stats.name || t("pet.defaultName");
+  const nStr = formatNumber(stats.debrisTotal);
+  const text = () => t("share.text", { name, n: nStr });
   const url = () => getShareUrl();
 
   const onCard = async () => {
     if (busy) return;
     setBusy(true);
-    flash("카드 만드는 중…");
+    flash(t("share.flash.rendering"));
     const svg = petHostRef.current?.querySelector("svg")?.outerHTML ?? "";
-    const file = await renderShareCard(stats, svg);
+    const file = await renderShareCard(stats, svg, {
+      name,
+      count: t("share.cardCount", { n: nStr }),
+      caption: t("share.cardCaption"),
+      brand: t("share.cardBrand"),
+    });
     setBusy(false);
     if (!file) {
-      flash("카드 생성에 실패했어요 😢");
+      flash(t("share.flash.renderFail"));
       return;
     }
     const shared = await shareNative(text(), url(), [file]);
@@ -57,31 +65,37 @@ export default function SharePanel({ stats }: { stats: ShareStats }) {
       return;
     }
     downloadFile(file);
-    flash("카드를 저장했어요! 인스타그램 등에 올려보세요 📸");
+    flash(t("share.flash.cardSaved"));
   };
 
   const onKakao = async () => {
-    if (await shareKakao(stats, url())) return;
+    if (
+      await shareKakao(url(), {
+        title: t("share.kakaoTitle"),
+        description: text(),
+        buttonTitle: t("share.kakaoButton"),
+      })
+    )
+      return;
     if (await shareNative(text(), url())) return;
-    if (await copyLink(url())) flash("링크를 복사했어요! 카카오톡에 붙여넣어 공유하세요");
-    else flash("공유에 실패했어요");
+    if (await copyLink(url())) flash(t("share.flash.copiedForKakao"));
+    else flash(t("share.flash.shareFail"));
   };
 
   const onCopy = async () => {
-    if (await copyLink(url())) flash("링크를 복사했어요! 🔗");
-    else flash("복사에 실패했어요");
+    if (await copyLink(url())) flash(t("share.flash.linkCopied"));
+    else flash(t("share.flash.copyFail"));
   };
 
   const onMore = async () => {
-    if (!(await shareNative(text(), url()))) flash("이 브라우저는 공유 시트를 지원하지 않아요");
+    if (!(await shareNative(text(), url()))) flash(t("share.flash.noShareSheet"));
   };
 
   return (
     <section className="rounded-2xl bg-white/5 p-4">
-      <span className="text-sm font-semibold">친구에게 자랑하기 🎉</span>
+      <span className="text-sm font-semibold">{t("share.panelTitle")}</span>
       <p className="mt-1 text-xs leading-relaxed text-white/55">
-        {stats.name || "별이"}가 정화한 우주쓰레기{" "}
-        <b className="text-mint">{stats.debrisTotal.toLocaleString()}</b>개를 공유해요.
+        {t("share.panelDesc", { name, n: nStr })}
       </p>
 
       <button
@@ -89,23 +103,36 @@ export default function SharePanel({ stats }: { stats: ShareStats }) {
         disabled={busy}
         className="mt-3 w-full rounded-xl bg-mint py-2.5 text-sm font-bold text-space-900 transition active:scale-95 disabled:opacity-50"
       >
-        🖼️ 카드로 자랑하기
+        {t("share.cardCta")}
       </button>
 
       <div className="mt-3 grid grid-cols-5 gap-2">
-        <IconButton label="카카오톡" onClick={onKakao} bg="#FEE500">
+        <IconButton label={t("share.channel.kakao")} onClick={onKakao} bg="#FEE500">
           <KakaoGlyph />
         </IconButton>
-        <IconButton label="페이스북" onClick={() => shareFacebook(url())} bg="#1877F2">
+        <IconButton
+          label={t("share.channel.facebook")}
+          onClick={() => shareFacebook(url())}
+          bg="#1877F2"
+        >
           <FacebookGlyph />
         </IconButton>
-        <IconButton label="X" onClick={() => shareX(text(), url())} bg="#000000" ring>
+        <IconButton
+          label={t("share.channel.x")}
+          onClick={() => shareX(text(), url())}
+          bg="#000000"
+          ring
+        >
           <XGlyph />
         </IconButton>
-        <IconButton label="인스타그램" onClick={onCard} instagram>
+        <IconButton label={t("share.channel.instagram")} onClick={onCard} instagram>
           <InstagramGlyph />
         </IconButton>
-        <IconButton label="링크 복사" onClick={onCopy} bg="rgba(255,255,255,0.12)">
+        <IconButton
+          label={t("share.channel.copyLink")}
+          onClick={onCopy}
+          bg="rgba(255,255,255,0.12)"
+        >
           <LinkGlyph />
         </IconButton>
       </div>
@@ -115,7 +142,7 @@ export default function SharePanel({ stats }: { stats: ShareStats }) {
           onClick={onMore}
           className="mt-2 w-full rounded-xl bg-white/8 py-2 text-xs font-semibold text-white/75 transition active:scale-95"
         >
-          다른 앱으로 공유하기 ↗
+          {t("share.moreCta")}
         </button>
       )}
 

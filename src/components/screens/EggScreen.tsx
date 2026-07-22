@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import EggSvg from "@/components/EggSvg";
 import type { GameApi } from "@/hooks/useGame";
+import { useI18n } from "@/i18n/I18nProvider";
 import { EGG_WARMTH_GOAL } from "@/lib/constants";
 
 export default function EggScreen({ api }: { api: GameApi }) {
+  const { t } = useI18n();
   const [wobbleKey, setWobbleKey] = useState<number | undefined>();
   const warmth = api.state.eggWarmth;
   const hatching = warmth >= EGG_WARMTH_GOAL;
@@ -30,12 +32,10 @@ export default function EggScreen({ api }: { api: GameApi }) {
   return (
     <div className="anim-fadeup relative z-10 flex h-full flex-col items-center px-6 pb-8 pt-14">
       <h1 className="text-xl font-bold">
-        {hatching ? "곧 만나요…!" : "알을 토닥토닥 해주세요"}
+        {hatching ? t("egg.titleHatching") : t("egg.titleDefault")}
       </h1>
       <p className="mt-2 text-sm text-white/60">
-        {hatching
-          ? "안에서 꼬물꼬물 움직이고 있어요"
-          : "따뜻한 손길을 느끼면 깨어날 거예요"}
+        {hatching ? t("egg.subtitleHatching") : t("egg.subtitleDefault")}
       </p>
 
       {/* 온기 게이지 */}
@@ -55,7 +55,7 @@ export default function EggScreen({ api }: { api: GameApi }) {
       <button
         onClick={onTap}
         className="relative mt-4 w-64 active:scale-95 transition"
-        aria-label="알 토닥이기"
+        aria-label={t("egg.ariaTap")}
       >
         <EggSvg
           color={api.state.pet.color}
@@ -70,7 +70,7 @@ export default function EggScreen({ api }: { api: GameApi }) {
       </button>
 
       {!hatching && (
-        <p className="mt-6 text-xs text-white/40">알을 탭해서 온기를 전해주세요</p>
+        <p className="mt-6 text-xs text-white/40">{t("egg.hint")}</p>
       )}
     </div>
   );
