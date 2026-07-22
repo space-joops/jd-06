@@ -29,6 +29,7 @@
 | v0.5.1 | 우주쓰레기 7종을 이모지→사실적 SVG 아트(`debris.ts`, MLI 금박·태양전지 셀·육각 볼트·페어링 허니콤·EVA 공구가방 등)로 교체. 게임 캔버스(스프라이트)·도감 공용 |
 | v0.5.2 | 위성 연출 개편: 한글 라벨 제거·본체에 영어 약칭, 등장 빈도↓(한 번에 한 종류), 플라이바이(멀리서 천천히→근접 시 빠르게·웅장), 근접 통과/사이드 이탈 혼합·스타링크 트레인은 멀리서 사이드로. 근접 시 화면 흔들림+저음 "웅" 사운드. 분출량 따라 분사 색, 충돌 금지 위험물(가스 감소), 초기 가스 30%↓+`NEXT_PUBLIC_GAS_MAX` env화 |
 | v0.6.0 | 소셜 공유: 설정에 카카오톡·페이스북·X·인스타그램·링크복사 + "카드로 자랑하기"(캔버스로 펫+정화량 이미지 생성→Web Share files). OG/Twitter 메타(`layout.tsx`, metadataBase) + 정적 `public/og.png`(1200×630)로 심리스 링크 프리뷰. 웹 표준(Web Share/Clipboard/OG/표준 intent) 우선, 카카오만 SDK. env `NEXT_PUBLIC_SITE_URL`·`NEXT_PUBLIC_KAKAO_JS_KEY` |
+| v0.7.0 | 반대편 먹방: 재회 윈도우 밖에서 펫이 우주쓰레기를 먹는 애니(`PetEating`, `expression="eating"` + chomp·munch CSS, 도감 SVG 재사용). 쓰다듬기 반응: 탭 시 스퀴시 애니(WAAPI `usePetReaction`) + 진동(Vibration API) — 궤도·육성 공통 |
 
 전 플로우를 Chrome 자동화로 실제 플레이하며 검증 완료 (정산 수치, SW 업데이트 사이클 포함).
 
@@ -71,12 +72,14 @@ src/
   hooks/
     useGame.ts      게임 상태 훅 — 1초 틱, 오프라인 정산, 자동 저장, 액션 API
     usePwa.ts       SW 등록/업데이트 감지, 설치 프롬프트, 알림 권한
+    usePetReaction.ts 쓰다듬기 반응 — WAAPI 스퀴시 + Vibration API(진동)
   components/
     Game.tsx        클라이언트 루트 — 스테이지 분기, 알림 트리거, 업데이트 배너,
                     설치 토스트, 공통 버전 푸터
     PetSvg.tsx      캐릭터 (색 3종 × 표정 5종 × 슈트 3색 레이어)
     OrbitView.tsx   지구+궤도+펫 위치 시각화
     SpacewalkGame.tsx 함께 수거하기 = 우주유영 아케이드 게임 (캔버스 + rAF, 물리·조이스틱)
+    PetEating.tsx   반대편 먹방 애니 (펫 eating 표정 + 파편이 입으로, CSS만)
     EggSvg.tsx / Stars.tsx / Gauge.tsx / Hearts.tsx / InstallToast.tsx
     screens/        Adopt → Egg → Name → Raising → Prep → Launching → Orbit
     panels/         Sheet(바텀시트 셸), LettersPanel, DebrisPanel, SettingsPanel, SettleModal

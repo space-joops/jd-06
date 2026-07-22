@@ -5,12 +5,14 @@ import SpacewalkGame, { type CollectResult } from "@/components/SpacewalkGame";
 import Gauge, { moodColor } from "@/components/Gauge";
 import { Hearts, useHearts } from "@/components/Hearts";
 import OrbitView from "@/components/OrbitView";
+import PetEating from "@/components/PetEating";
 import PetSvg from "@/components/PetSvg";
 import DebrisPanel from "@/components/panels/DebrisPanel";
 import LettersPanel from "@/components/panels/LettersPanel";
 import SettingsPanel from "@/components/panels/SettingsPanel";
 import Sheet from "@/components/panels/Sheet";
 import type { GameApi } from "@/hooks/useGame";
+import { usePetReaction } from "@/hooks/usePetReaction";
 import type { PwaApi } from "@/hooks/usePwa";
 import { DEBRIS_DEFS, ORBIT_MS, REUNION_WINDOW_RATIO } from "@/lib/constants";
 import { currentMood, formatMMSS, getExpression, orbitInfo } from "@/lib/game";
@@ -28,6 +30,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
   /** null = 게임 닫힘, "reunion" = 재회 윈도우(패스 소비), "free" = 설정에서 언제나 */
   const [collectMode, setCollectMode] = useState<"reunion" | "free" | null>(null);
   const { hearts, spawn } = useHearts();
+  const { ref: petRef, react } = usePetReaction();
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,6 +48,7 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
     const rect = e.currentTarget.getBoundingClientRect();
     if (api.doPet()) {
       spawn(e.clientX - rect.left, e.clientY - rect.top);
+      react();
     }
   };
 
@@ -119,12 +123,14 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
               className="relative -mt-1 w-40 cursor-pointer touch-none"
               onPointerDown={onPetTap}
             >
-              <PetSvg
-                color={state.pet.color}
-                expression={getExpression(state, now)}
-                suit={state.pet.suit}
-                className="w-full"
-              />
+              <div ref={petRef} className="will-change-transform">
+                <PetSvg
+                  color={state.pet.color}
+                  expression={getExpression(state, now)}
+                  suit={state.pet.suit}
+                  className="w-full"
+                />
+              </div>
               <Hearts items={hearts} />
             </div>
             {/* 윈도우 남은 시간 */}
@@ -158,14 +164,15 @@ export default function OrbitScreen({ api, pwa }: { api: GameApi; pwa: PwaApi })
           </>
         ) : (
           <>
-            <p className="text-sm text-white/60">다음 재회까지</p>
-            <p className="mt-1 font-mono text-5xl font-bold tabular-nums">
-              {formatMMSS(orbit.nextWindowInMs)}
-            </p>
-            <p className="mt-3 text-center text-sm text-white/70">
+            <PetEating color={state.pet.color} suit={state.pet.suit} />
+            <p className="-mt-1 text-center text-sm text-white/75">
               {farSide
-                ? `${state.pet.name}는 지구 반대편을 돌며 수거 중이에요 🌌`
-                : `${state.pet.name}가 우리 집 쪽으로 다가오고 있어요 ✨`}
+                ? `${state.pet.name}가 지구 반대편에서 열심히 쓰레기를 먹고 있어요! 🍽️`
+                : `${state.pet.name}가 우리 집 쪽으로 다가오며 수거 중이에요 ✨`}
+            </p>
+            <p className="mt-3 text-xs text-white/45">다음 재회까지</p>
+            <p className="mt-0.5 font-mono text-4xl font-bold tabular-nums">
+              {formatMMSS(orbit.nextWindowInMs)}
             </p>
           </>
         )}

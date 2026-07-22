@@ -5,6 +5,7 @@ import Gauge, { moodColor } from "@/components/Gauge";
 import { Hearts, useHearts } from "@/components/Hearts";
 import PetSvg from "@/components/PetSvg";
 import type { GameApi } from "@/hooks/useGame";
+import { usePetReaction } from "@/hooks/usePetReaction";
 import { BOND_GOAL, FEED_COOLDOWN_MS } from "@/lib/constants";
 import { currentMood, getExpression } from "@/lib/game";
 import type { Expression } from "@/lib/types";
@@ -12,6 +13,7 @@ import type { Expression } from "@/lib/types";
 export default function RaisingScreen({ api }: { api: GameApi }) {
   const { state, now } = api;
   const { hearts, spawn } = useHearts();
+  const { ref: petRef, react } = usePetReaction();
   const [happyUntil, setHappyUntil] = useState(0);
 
   const mood = currentMood(state, now);
@@ -26,6 +28,7 @@ export default function RaisingScreen({ api }: { api: GameApi }) {
     if (api.doPet()) {
       spawn(e.clientX - rect.left, e.clientY - rect.top);
       setHappyUntil(Date.now() + 1500);
+      react();
     }
   };
 
@@ -54,7 +57,9 @@ export default function RaisingScreen({ api }: { api: GameApi }) {
           className="relative z-10 w-60 cursor-pointer touch-none"
           onPointerDown={onPetTap}
         >
-          <PetSvg color={state.pet.color} expression={expression} className="w-full" />
+          <div ref={petRef} className="will-change-transform">
+            <PetSvg color={state.pet.color} expression={expression} className="w-full" />
+          </div>
           <Hearts items={hearts} />
         </div>
         {/* 언덕 */}

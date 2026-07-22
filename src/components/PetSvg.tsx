@@ -21,7 +21,11 @@ export default function PetSvg({
   const c = PET_COLORS[color];
   const s = suit ? SUIT_COLORS[suit] : null;
   const gradId = `astro-body-${color}`;
-  const openEyes = expression === "neutral" || expression === "happy" || expression === "excited";
+  const openEyes =
+    expression === "neutral" ||
+    expression === "happy" ||
+    expression === "excited" ||
+    expression === "eating";
 
   return (
     <svg viewBox="0 0 200 200" className={className} aria-hidden>
@@ -94,7 +98,11 @@ export default function PetSvg({
           rx={8}
           ry={5}
           fill="#ff9eb5"
-          opacity={expression === "happy" || expression === "excited" ? 0.65 : 0.35}
+          opacity={
+            expression === "happy" || expression === "excited" || expression === "eating"
+              ? 0.65
+              : 0.35
+          }
         />
         <ellipse
           cx={138}
@@ -102,12 +110,22 @@ export default function PetSvg({
           rx={8}
           ry={5}
           fill="#ff9eb5"
-          opacity={expression === "happy" || expression === "excited" ? 0.65 : 0.35}
+          opacity={
+            expression === "happy" || expression === "excited" || expression === "eating"
+              ? 0.65
+              : 0.35
+          }
         />
 
         {/* 입 */}
         {expression === "excited" ? (
           <path d="M91 128 Q100 145 109 128 Z" fill="#7c4864" />
+        ) : expression === "eating" ? (
+          <>
+            {/* 벌린 입 + 혀 (냠냠) */}
+            <ellipse cx={100} cy={133} rx={8} ry={6.5} fill="#7c4864" />
+            <ellipse cx={100} cy={136.5} rx={4.6} ry={2.6} fill="#ff9eb5" />
+          </>
         ) : expression === "happy" ? (
           <path d="M90 128 Q100 141 110 128" stroke="#2b2350" strokeWidth={3} fill="none" strokeLinecap="round" />
         ) : expression === "lonely" ? (
