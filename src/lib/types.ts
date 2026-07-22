@@ -9,7 +9,7 @@ export type Stage =
 
 export type PetColor = "mint" | "pink" | "lavender";
 export type SuitColor = "coral" | "sky" | "gold";
-export type Expression = "neutral" | "happy" | "excited" | "lonely" | "sleepy";
+export type Expression = "neutral" | "happy" | "excited" | "lonely" | "sleepy" | "eating";
 
 export type DebrisId =
   | "paint"
