@@ -4,6 +4,7 @@
 
 > **예상 소요**: 3~4시간 (핵심 개념 2h + 실습·연습 1.5h)
 > **교보재 파일**: `src/lib/game.ts`, `src/lib/types.ts`, `src/lib/constants.ts`, `tsconfig.json`, `package.json`
+> **짝 문서**: [JS 기초(심화)](./foundations-js.md) — 스코프·클로저·`this`·이벤트·에러처리를 배경부터 더 깊게.
 
 ---
 

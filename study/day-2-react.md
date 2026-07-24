@@ -6,6 +6,7 @@
 > **교보재 파일**: `src/components/Game.tsx`, `src/hooks/useGame.ts`, `src/hooks/usePwa.ts`,
 > `src/hooks/usePetReaction.ts`, `src/components/Hearts.tsx`, `src/components/screens/RaisingScreen.tsx`,
 > `src/components/screens/OrbitScreen.tsx`
+> **선행 권장**: [HTML 기초](./foundations-html.md) — JSX가 만드는 HTML·시맨틱·폼·접근성을 먼저 잡으면 React가 쉬워진다.
 
 ---
 

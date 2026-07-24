@@ -70,6 +70,18 @@ npx next start    # 빌드 결과 실행 (SW/PWA는 여기서만 동작)
 | **4** | **브라우저 플랫폼 & Web APIs** | DOM·Canvas+rAF·SVG·PWA·수많은 Web API | [day-4](./day-4-browser-web-apis.md) |
 | **5** | **아키텍처·i18n·성능 + 캡스톤** | 계층 설계·국제화·성능·접근성 + 전 계층 실습 | [day-5](./day-5-architecture-i18n-perf-capstone.md) |
 
+### 🧱 기초 다지기 (Foundations) — HTML · CSS · JS
+
+웹 플랫폼의 **원리(HTML·CSS·JS)** 가 낯설다면, 5일 트랙 **전에** 또는 Day 1~3과 **병행**해서 이
+3부작을 읽어라. 우리 저장소의 실제 마크업·스타일·코드로 문법과 배경 지식을 처음부터 짚고, 연습문제로
+손에 익힌다. (프레임워크 없이 "날것의 웹"을 이해하는 층 — Day 2·3의 React/Tailwind가 훨씬 쉬워진다.)
+
+- 🧩 [**HTML 기초**](./foundations-html.md) — 문서 구조·요소·속성·시맨틱·폼·접근성 (JSX↔HTML) · *Day 2 전*
+- 🎨 [**CSS 기초**](./foundations-css.md) — 박스 모델·Flexbox·position·애니메이션·변수 (Tailwind↔raw CSS) · *Day 3 전*
+- ⚙️ [**JS 기초(심화)**](./foundations-js.md) — 스코프·클로저·`this`·이벤트·에러처리·값/참조 · *Day 1 짝*
+
+> 이미 HTML/CSS/JS 감이 있으면 이 3부작은 **레퍼런스로만** 훑고 바로 Day 1로 가도 된다.
+
 ### 곁에 두고 보는 레퍼런스
 
 - 🔁 [**Python → Web 치트시트**](./cheatsheet-python-to-web.md) — 문법·자료구조·비동기·타입 대조표

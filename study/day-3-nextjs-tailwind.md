@@ -5,6 +5,7 @@
 > **예상 소요**: 3.5시간 (Next.js 2h + Tailwind 1h + 실습 0.5h)
 > **교보재 파일**: `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/manifest.ts`,
 > `next.config.ts`, `src/app/globals.css`
+> **선행 권장**: [CSS 기초](./foundations-css.md) — 박스모델·Flexbox·애니메이션·CSS변수를 먼저 알면 Tailwind가 "raw CSS의 축약"으로 보인다.
 
 ---
 
